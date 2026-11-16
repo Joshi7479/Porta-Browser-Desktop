@@ -1,0 +1,5 @@
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/Porta_Browser.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/Porta_Browser_autogen_timestamp_deps.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/Porta_Browser_autogen.dir
