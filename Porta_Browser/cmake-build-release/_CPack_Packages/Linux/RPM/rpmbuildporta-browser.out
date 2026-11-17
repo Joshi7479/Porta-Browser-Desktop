@@ -1,7 +1,7 @@
 setting SOURCE_DATE_EPOCH=1278201600
-Executing(%mkbuilddir): /bin/sh -e /var/tmp/rpm-tmp.davZ1B
-Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.3vBeu4
-Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.zrXBua
+Executing(%mkbuilddir): /bin/sh -e /var/tmp/rpm-tmp.yF2xMH
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.18ibPw
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.XQURLa
 Scanned 9 directories and 3 files,
     processed 0 inodes,
     0 modified (0 replaced + 0 rewritten),
@@ -9,11 +9,11 @@ Scanned 9 directories and 3 files,
 Scanned 8 directories and 3 files,
     considered 3 files, read 0 files, linked 0 files, 0 errors
     sum of sizes of linked files: 0 bytes
-Processing files: porta-browser-0.0.2-1.x86_64
-Provides: application() application(porta-browser.desktop) mimehandler(text/html) mimehandler(x-scheme-handler/http) mimehandler(x-scheme-handler/https) porta-browser = 0.0.2-1 porta-browser(x86-64) = 0.0.2-1
+Processing files: porta-browser-0.0.3-1.x86_64
+Provides: application() application(porta-browser.desktop) mimehandler(text/html) mimehandler(x-scheme-handler/http) mimehandler(x-scheme-handler/https) porta-browser = 0.0.3-1 porta-browser(x86-64) = 0.0.3-1
 Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
 Requires: libGLX.so.0()(64bit) libOpenGL.so.0()(64bit) libQt6Core.so.6()(64bit) libQt6Core.so.6(Qt_6)(64bit) libQt6Core.so.6(Qt_6.11)(64bit) libQt6Gui.so.6()(64bit) libQt6Gui.so.6(Qt_6)(64bit) libQt6Network.so.6()(64bit) libQt6OpenGL.so.6()(64bit) libQt6Positioning.so.6()(64bit) libQt6PrintSupport.so.6()(64bit) libQt6Qml.so.6()(64bit) libQt6Quick.so.6()(64bit) libQt6Sql.so.6()(64bit) libQt6Sql.so.6(Qt_6)(64bit) libQt6WebChannel.so.6()(64bit) libQt6WebEngineCore.so.6()(64bit) libQt6WebEngineWidgets.so.6()(64bit) libQt6WebEngineWidgets.so.6(Qt_6)(64bit) libQt6Widgets.so.6()(64bit) libQt6Widgets.so.6(Qt_6)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.2.5)(64bit) libc.so.6(GLIBC_2.34)(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libm.so.6()(64bit) libstdc++.so.6()(64bit) libstdc++.so.6(CXXABI_1.3)(64bit) libstdc++.so.6(CXXABI_1.3.9)(64bit) libstdc++.so.6(GLIBCXX_3.4)(64bit) rtld(GNU_HASH)
-Checking for unpackaged file(s): /usr/lib/rpm/check-files /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.2-Linux
-Wrote: /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/RPMS/Porta-Browser-0.0.2-Linux.rpm
-Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.Z35oIB
-Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.rQBWTX
+Checking for unpackaged file(s): /usr/lib/rpm/check-files /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
+Wrote: /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/RPMS/Porta-Browser-0.0.3-Linux.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.z4jMFf
+Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.8g4mFd
