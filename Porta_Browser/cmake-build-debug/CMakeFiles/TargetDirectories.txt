@@ -1,5 +1,11 @@
 /home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/Porta_Browser.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/package.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/package_source.dir
 /home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/edit_cache.dir
 /home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/list_install_components.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/install.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/install/local.dir
+/home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/install/strip.dir
 /home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/Porta_Browser_autogen_timestamp_deps.dir
 /home/joshua/CLionProjects/Porta_Browser/cmake-build-debug/CMakeFiles/Porta_Browser_autogen.dir

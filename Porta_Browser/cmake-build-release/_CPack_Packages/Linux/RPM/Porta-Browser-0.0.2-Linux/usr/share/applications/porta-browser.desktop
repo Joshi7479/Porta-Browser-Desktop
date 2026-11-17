@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Porta Browser
+GenericName=Web Browser
+Comment=A simple, fast, lightweight Browser
+Exec=Porta_Browser %U
+Icon=porta-browser
+Terminal=false
+Categories=Network;WebBrowser;
+Keywords=browser;web;internet;
+StartupNotify=true
+MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;

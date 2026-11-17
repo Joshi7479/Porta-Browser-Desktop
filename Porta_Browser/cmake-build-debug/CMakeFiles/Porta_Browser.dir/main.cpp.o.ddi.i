@@ -178797,219 +178797,7 @@ private:
 
 # 2 "/usr/include/qt6/QtWidgets/QApplication" 2 3
 # 2 "/home/joshua/CLionProjects/Porta_Browser/main.cpp" 2
-# 1 "/home/joshua/CLionProjects/Porta_Browser/MainWindow.h" 1
-
-
-
-
-
-
-
-       
-# 1 "/usr/include/qt6/QtWidgets/QMainWindow" 1 3
-# 1 "/usr/include/qt6/QtWidgets/qmainwindow.h" 1 3
-# 9 "/usr/include/qt6/QtWidgets/qmainwindow.h" 3
-# 1 "/usr/include/qt6/QtWidgets/qwidget.h" 1 3
-# 13 "/usr/include/qt6/QtWidgets/qwidget.h" 3
-# 1 "/usr/include/qt6/QtGui/qaction.h" 1 3
-# 9 "/usr/include/qt6/QtGui/qaction.h" 3
-# 1 "/usr/include/qt6/QtGui/qkeysequence.h" 1 3
-# 11 "/usr/include/qt6/QtGui/qkeysequence.h" 3
-static_assert(1 == 1, "Required feature " "shortcut" " for file " "/usr/include/qt6/QtGui/qkeysequence.h" " not available.");
-
-
-
-class QKeySequence;
-
-
-
-
-
-__attribute__((visibility("default"))) QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
-__attribute__((visibility("default"))) QDataStream &operator>>(QDataStream &out, QKeySequence &ks);
-
-
-
-
-
-
-class QVariant;
-class QKeySequencePrivate;
-
-__attribute__((visibility("default"))) __attribute__((pure)) size_t qHash(const QKeySequence &key, size_t seed = 0) noexcept;
-
-class __attribute__((visibility("default"))) QKeySequence
-{
-    public: static const QMetaObject staticMetaObject; void qt_check_for_QGADGET_macro(); typedef void QtGadgetHelper; private: 
-# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
-#pragma GCC diagnostic push
-# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
-    template <typename> static constexpr auto qt_create_metaobjectdata(); template <typename MetaObjectTagType> static constexpr inline auto qt_staticMetaObjectContent = qt_create_metaobjectdata<MetaObjectTagType>(); template <typename MetaObjectTagType> static constexpr inline auto qt_staticMetaObjectStaticContent = qt_staticMetaObjectContent<MetaObjectTagType>.staticData; template <typename MetaObjectTagType> static constexpr inline auto qt_staticMetaObjectRelocatingContent = qt_staticMetaObjectContent<MetaObjectTagType>.relocatingData; 
-# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
-#pragma GCC diagnostic ignored "-Wattributes"
-# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
-    __attribute__((visibility("hidden"))) static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); 
-# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
-#pragma GCC diagnostic pop
-
-public:
-    enum StandardKey {
-        UnknownKey,
-        HelpContents,
-        WhatsThis,
-        Open,
-        Close,
-        Save,
-        New,
-        Delete,
-        Cut,
-        Copy,
-        Paste,
-        Undo,
-        Redo,
-        Back,
-        Forward,
-        Refresh,
-        ZoomIn,
-        ZoomOut,
-        Print,
-        AddTab,
-        NextChild,
-        PreviousChild,
-        Find,
-        FindNext,
-        FindPrevious,
-        Replace,
-        SelectAll,
-        Bold,
-        Italic,
-        Underline,
-        MoveToNextChar,
-        MoveToPreviousChar,
-        MoveToNextWord,
-        MoveToPreviousWord,
-        MoveToNextLine,
-        MoveToPreviousLine,
-        MoveToNextPage,
-        MoveToPreviousPage,
-        MoveToStartOfLine,
-        MoveToEndOfLine,
-        MoveToStartOfBlock,
-        MoveToEndOfBlock,
-        MoveToStartOfDocument,
-        MoveToEndOfDocument,
-        SelectNextChar,
-        SelectPreviousChar,
-        SelectNextWord,
-        SelectPreviousWord,
-        SelectNextLine,
-        SelectPreviousLine,
-        SelectNextPage,
-        SelectPreviousPage,
-        SelectStartOfLine,
-        SelectEndOfLine,
-        SelectStartOfBlock,
-        SelectEndOfBlock,
-        SelectStartOfDocument,
-        SelectEndOfDocument,
-        DeleteStartOfWord,
-        DeleteEndOfWord,
-        DeleteEndOfLine,
-        InsertParagraphSeparator,
-        InsertLineSeparator,
-        SaveAs,
-        Preferences,
-        Quit,
-        FullScreen,
-        Deselect,
-        DeleteCompleteLine,
-        Backspace,
-        Cancel
-     };
-     friend constexpr const QMetaObject *qt_getEnumMetaObject(StandardKey) noexcept { return &staticMetaObject; } friend constexpr const char *qt_getEnumName(StandardKey) noexcept { return "StandardKey"; }
-
-    enum SequenceFormat {
-        NativeText,
-        PortableText
-    };
-    friend constexpr const QMetaObject *qt_getEnumMetaObject(SequenceFormat) noexcept { return &staticMetaObject; } friend constexpr const char *qt_getEnumName(SequenceFormat) noexcept { return "SequenceFormat"; }
-
-    QKeySequence();
-    QKeySequence(const QString &key, SequenceFormat format = NativeText);
-    QKeySequence(int k1, int k2 = 0, int k3 = 0, int k4 = 0);
-    QKeySequence(QKeyCombination k1,
-                 QKeyCombination k2 = QKeyCombination::fromCombined(0),
-                 QKeyCombination k3 = QKeyCombination::fromCombined(0),
-                 QKeyCombination k4 = QKeyCombination::fromCombined(0));
-    QKeySequence(const QKeySequence &ks);
-    QKeySequence(StandardKey key);
-    ~QKeySequence();
-
-    int count() const;
-    bool isEmpty() const;
-
-    enum SequenceMatch {
-        NoMatch,
-        PartialMatch,
-        ExactMatch
-    };
-    friend constexpr const QMetaObject *qt_getEnumMetaObject(SequenceMatch) noexcept { return &staticMetaObject; } friend constexpr const char *qt_getEnumName(SequenceMatch) noexcept { return "SequenceMatch"; }
-
-    QString toString(SequenceFormat format = PortableText) const;
-    static QKeySequence fromString(const QString &str, SequenceFormat format = PortableText);
-
-    static QList<QKeySequence> listFromString(const QString &str, SequenceFormat format = PortableText);
-    static QString listToString(const QList<QKeySequence> &list, SequenceFormat format = PortableText);
-
-    SequenceMatch matches(const QKeySequence &seq) const;
-    static QKeySequence mnemonic(const QString &text);
-    static QList<QKeySequence> keyBindings(StandardKey key);
-
-    operator QVariant() const;
-    QKeyCombination operator[](uint i) const;
-    QKeySequence &operator=(const QKeySequence &other);
-    QKeySequence &operator=(QKeySequence &&other) noexcept { swap(other); return *this; }
-    void swap(QKeySequence &other) noexcept { qt_ptr_swap(d, other.d); }
-
-    bool operator==(const QKeySequence &other) const;
-    inline bool operator!= (const QKeySequence &other) const
-    { return !(*this == other); }
-    bool operator< (const QKeySequence &ks) const;
-    inline bool operator> (const QKeySequence &other) const
-    { return other < *this; }
-    inline bool operator<= (const QKeySequence &other) const
-    { return !(other < *this); }
-    inline bool operator>= (const QKeySequence &other) const
-    { return !(*this < other); }
-
-    bool isDetached() const;
-private:
-    int assign(const QString &str);
-    int assign(const QString &str, SequenceFormat format);
-    void setKey(QKeyCombination key, int index);
-
-    QKeySequencePrivate *d;
-
-    friend __attribute__((visibility("default"))) QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
-    friend __attribute__((visibility("default"))) QDataStream &operator>>(QDataStream &in, QKeySequence &ks);
-    friend __attribute__((visibility("default"))) size_t qHash(const QKeySequence &key, size_t seed) noexcept;
-    friend class QShortcutMap;
-    friend class QShortcut;
-
-public:
-    typedef QKeySequencePrivate * DataPtr;
-    inline DataPtr &data_ptr() { return d; }
-};
-
-inline void swap(QKeySequence &value1, QKeySequence &value2) noexcept(noexcept(value1.swap(value2))) { value1.swap(value2); } template<> class QTypeInfo<QKeySequence > { public: enum { isComplex = (((Q_RELOCATABLE_TYPE) & Q_PRIMITIVE_TYPE) == 0) && QtPrivate::qIsComplex<QKeySequence>, isRelocatable = !isComplex || ((Q_RELOCATABLE_TYPE) & Q_RELOCATABLE_TYPE) || QtPrivate::qIsRelocatable<QKeySequence>, isPointer [[deprecated("Use std::is_pointer instead")]] = std::is_pointer_v< QKeySequence >, isIntegral [[deprecated("Use std::is_integral instead")]] = std::is_integral< QKeySequence >::value, isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<QKeySequence>, }; static_assert(!QTypeInfo<QKeySequence>::isRelocatable || std::is_copy_constructible_v<QKeySequence > || std::is_move_constructible_v<QKeySequence >, "QKeySequence" " is neither copy- nor move-constructible, so cannot be Q_RELOCATABLE_TYPE"); };
-
-
-__attribute__((visibility("default"))) QDebug operator<<(QDebug, const QKeySequence &);
-
-
-
-# 10 "/usr/include/qt6/QtGui/qaction.h" 2 3
-
+# 1 "/usr/include/qt6/QtGui/QIcon" 1 3
 # 1 "/usr/include/qt6/QtGui/qicon.h" 1 3
 # 12 "/usr/include/qt6/QtGui/qicon.h" 3
 
@@ -179301,7 +179089,222 @@ __attribute__((visibility("default"))) QString qt_findAtNxFile(const QString &ba
                                      qreal *sourceDevicePixelRatio = nullptr);
 
 
-# 12 "/usr/include/qt6/QtGui/qaction.h" 2 3
+# 2 "/usr/include/qt6/QtGui/QIcon" 2 3
+# 3 "/home/joshua/CLionProjects/Porta_Browser/main.cpp" 2
+# 1 "/home/joshua/CLionProjects/Porta_Browser/MainWindow.h" 1
+
+
+
+
+
+
+
+       
+# 1 "/usr/include/qt6/QtWidgets/QMainWindow" 1 3
+# 1 "/usr/include/qt6/QtWidgets/qmainwindow.h" 1 3
+# 9 "/usr/include/qt6/QtWidgets/qmainwindow.h" 3
+# 1 "/usr/include/qt6/QtWidgets/qwidget.h" 1 3
+# 13 "/usr/include/qt6/QtWidgets/qwidget.h" 3
+# 1 "/usr/include/qt6/QtGui/qaction.h" 1 3
+# 9 "/usr/include/qt6/QtGui/qaction.h" 3
+# 1 "/usr/include/qt6/QtGui/qkeysequence.h" 1 3
+# 11 "/usr/include/qt6/QtGui/qkeysequence.h" 3
+static_assert(1 == 1, "Required feature " "shortcut" " for file " "/usr/include/qt6/QtGui/qkeysequence.h" " not available.");
+
+
+
+class QKeySequence;
+
+
+
+
+
+__attribute__((visibility("default"))) QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
+__attribute__((visibility("default"))) QDataStream &operator>>(QDataStream &out, QKeySequence &ks);
+
+
+
+
+
+
+class QVariant;
+class QKeySequencePrivate;
+
+__attribute__((visibility("default"))) __attribute__((pure)) size_t qHash(const QKeySequence &key, size_t seed = 0) noexcept;
+
+class __attribute__((visibility("default"))) QKeySequence
+{
+    public: static const QMetaObject staticMetaObject; void qt_check_for_QGADGET_macro(); typedef void QtGadgetHelper; private: 
+# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
+#pragma GCC diagnostic push
+# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
+    template <typename> static constexpr auto qt_create_metaobjectdata(); template <typename MetaObjectTagType> static constexpr inline auto qt_staticMetaObjectContent = qt_create_metaobjectdata<MetaObjectTagType>(); template <typename MetaObjectTagType> static constexpr inline auto qt_staticMetaObjectStaticContent = qt_staticMetaObjectContent<MetaObjectTagType>.staticData; template <typename MetaObjectTagType> static constexpr inline auto qt_staticMetaObjectRelocatingContent = qt_staticMetaObjectContent<MetaObjectTagType>.relocatingData; 
+# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
+#pragma GCC diagnostic ignored "-Wattributes"
+# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
+    __attribute__((visibility("hidden"))) static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); 
+# 36 "/usr/include/qt6/QtGui/qkeysequence.h" 3
+#pragma GCC diagnostic pop
+
+public:
+    enum StandardKey {
+        UnknownKey,
+        HelpContents,
+        WhatsThis,
+        Open,
+        Close,
+        Save,
+        New,
+        Delete,
+        Cut,
+        Copy,
+        Paste,
+        Undo,
+        Redo,
+        Back,
+        Forward,
+        Refresh,
+        ZoomIn,
+        ZoomOut,
+        Print,
+        AddTab,
+        NextChild,
+        PreviousChild,
+        Find,
+        FindNext,
+        FindPrevious,
+        Replace,
+        SelectAll,
+        Bold,
+        Italic,
+        Underline,
+        MoveToNextChar,
+        MoveToPreviousChar,
+        MoveToNextWord,
+        MoveToPreviousWord,
+        MoveToNextLine,
+        MoveToPreviousLine,
+        MoveToNextPage,
+        MoveToPreviousPage,
+        MoveToStartOfLine,
+        MoveToEndOfLine,
+        MoveToStartOfBlock,
+        MoveToEndOfBlock,
+        MoveToStartOfDocument,
+        MoveToEndOfDocument,
+        SelectNextChar,
+        SelectPreviousChar,
+        SelectNextWord,
+        SelectPreviousWord,
+        SelectNextLine,
+        SelectPreviousLine,
+        SelectNextPage,
+        SelectPreviousPage,
+        SelectStartOfLine,
+        SelectEndOfLine,
+        SelectStartOfBlock,
+        SelectEndOfBlock,
+        SelectStartOfDocument,
+        SelectEndOfDocument,
+        DeleteStartOfWord,
+        DeleteEndOfWord,
+        DeleteEndOfLine,
+        InsertParagraphSeparator,
+        InsertLineSeparator,
+        SaveAs,
+        Preferences,
+        Quit,
+        FullScreen,
+        Deselect,
+        DeleteCompleteLine,
+        Backspace,
+        Cancel
+     };
+     friend constexpr const QMetaObject *qt_getEnumMetaObject(StandardKey) noexcept { return &staticMetaObject; } friend constexpr const char *qt_getEnumName(StandardKey) noexcept { return "StandardKey"; }
+
+    enum SequenceFormat {
+        NativeText,
+        PortableText
+    };
+    friend constexpr const QMetaObject *qt_getEnumMetaObject(SequenceFormat) noexcept { return &staticMetaObject; } friend constexpr const char *qt_getEnumName(SequenceFormat) noexcept { return "SequenceFormat"; }
+
+    QKeySequence();
+    QKeySequence(const QString &key, SequenceFormat format = NativeText);
+    QKeySequence(int k1, int k2 = 0, int k3 = 0, int k4 = 0);
+    QKeySequence(QKeyCombination k1,
+                 QKeyCombination k2 = QKeyCombination::fromCombined(0),
+                 QKeyCombination k3 = QKeyCombination::fromCombined(0),
+                 QKeyCombination k4 = QKeyCombination::fromCombined(0));
+    QKeySequence(const QKeySequence &ks);
+    QKeySequence(StandardKey key);
+    ~QKeySequence();
+
+    int count() const;
+    bool isEmpty() const;
+
+    enum SequenceMatch {
+        NoMatch,
+        PartialMatch,
+        ExactMatch
+    };
+    friend constexpr const QMetaObject *qt_getEnumMetaObject(SequenceMatch) noexcept { return &staticMetaObject; } friend constexpr const char *qt_getEnumName(SequenceMatch) noexcept { return "SequenceMatch"; }
+
+    QString toString(SequenceFormat format = PortableText) const;
+    static QKeySequence fromString(const QString &str, SequenceFormat format = PortableText);
+
+    static QList<QKeySequence> listFromString(const QString &str, SequenceFormat format = PortableText);
+    static QString listToString(const QList<QKeySequence> &list, SequenceFormat format = PortableText);
+
+    SequenceMatch matches(const QKeySequence &seq) const;
+    static QKeySequence mnemonic(const QString &text);
+    static QList<QKeySequence> keyBindings(StandardKey key);
+
+    operator QVariant() const;
+    QKeyCombination operator[](uint i) const;
+    QKeySequence &operator=(const QKeySequence &other);
+    QKeySequence &operator=(QKeySequence &&other) noexcept { swap(other); return *this; }
+    void swap(QKeySequence &other) noexcept { qt_ptr_swap(d, other.d); }
+
+    bool operator==(const QKeySequence &other) const;
+    inline bool operator!= (const QKeySequence &other) const
+    { return !(*this == other); }
+    bool operator< (const QKeySequence &ks) const;
+    inline bool operator> (const QKeySequence &other) const
+    { return other < *this; }
+    inline bool operator<= (const QKeySequence &other) const
+    { return !(other < *this); }
+    inline bool operator>= (const QKeySequence &other) const
+    { return !(*this < other); }
+
+    bool isDetached() const;
+private:
+    int assign(const QString &str);
+    int assign(const QString &str, SequenceFormat format);
+    void setKey(QKeyCombination key, int index);
+
+    QKeySequencePrivate *d;
+
+    friend __attribute__((visibility("default"))) QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
+    friend __attribute__((visibility("default"))) QDataStream &operator>>(QDataStream &in, QKeySequence &ks);
+    friend __attribute__((visibility("default"))) size_t qHash(const QKeySequence &key, size_t seed) noexcept;
+    friend class QShortcutMap;
+    friend class QShortcut;
+
+public:
+    typedef QKeySequencePrivate * DataPtr;
+    inline DataPtr &data_ptr() { return d; }
+};
+
+inline void swap(QKeySequence &value1, QKeySequence &value2) noexcept(noexcept(value1.swap(value2))) { value1.swap(value2); } template<> class QTypeInfo<QKeySequence > { public: enum { isComplex = (((Q_RELOCATABLE_TYPE) & Q_PRIMITIVE_TYPE) == 0) && QtPrivate::qIsComplex<QKeySequence>, isRelocatable = !isComplex || ((Q_RELOCATABLE_TYPE) & Q_RELOCATABLE_TYPE) || QtPrivate::qIsRelocatable<QKeySequence>, isPointer [[deprecated("Use std::is_pointer instead")]] = std::is_pointer_v< QKeySequence >, isIntegral [[deprecated("Use std::is_integral instead")]] = std::is_integral< QKeySequence >::value, isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<QKeySequence>, }; static_assert(!QTypeInfo<QKeySequence>::isRelocatable || std::is_copy_constructible_v<QKeySequence > || std::is_move_constructible_v<QKeySequence >, "QKeySequence" " is neither copy- nor move-constructible, so cannot be Q_RELOCATABLE_TYPE"); };
+
+
+__attribute__((visibility("default"))) QDebug operator<<(QDebug, const QKeySequence &);
+
+
+
+# 10 "/usr/include/qt6/QtGui/qaction.h" 2 3
+
+
 
 
 
@@ -182736,10 +182739,11 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 };
-# 3 "/home/joshua/CLionProjects/Porta_Browser/main.cpp" 2
+# 4 "/home/joshua/CLionProjects/Porta_Browser/main.cpp" 2
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
+    a.setWindowIcon(QIcon(":/icons/icon.png"));
     MainWindow w;
     w.showMaximized();
     return QApplication::exec();
