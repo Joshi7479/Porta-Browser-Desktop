@@ -1,5 +1,0 @@
-ninja_dyndep_version = 1.0
-build CMakeFiles/Porta_Browser.dir/main.cpp.o: dyndep
-
-build CMakeFiles/Porta_Browser.dir/MainWindow.cpp.o: dyndep
-
