@@ -18,6 +18,45 @@
 #include <QFileInfo>
 #include <QWebEngineDownloadRequest>
 #include <QFileDialog>
+#include <QScrollArea>
+#include <QLabel>
+#include <QPushButton>
+#include <QLayoutItem>
+#include <QPushButton>
+#include <QFontMetrics>
+#include <QResizeEvent>
+
+namespace {
+    class ElidedButton : public QPushButton {
+    public:
+        ElidedButton(const QString &fullText, QWidget *parent = nullptr)
+            : QPushButton(parent), m_full(fullText)
+        {
+            setFlat(true);
+            setCursor(Qt::PointingHandCursor);
+            setToolTip(fullText);
+            setStyleSheet("text-align: left; padding: 4px; border: none;");
+            setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+            updateText();
+        }
+
+    protected:
+        void resizeEvent(QResizeEvent *e) override {
+            QPushButton::resizeEvent(e);
+            updateText();
+        }
+
+    private:
+        void updateText() {
+            const QFontMetrics fm(font());
+            QString t = fm.elidedText(m_full, Qt::ElideRight, qMax(0, width() - 12));
+            t.replace("&", "&&");
+            setText(t);
+        }
+
+        QString m_full;
+    };
+}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
@@ -48,11 +87,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *newtab = new QToolButton(tabwidget);
     auto *closeall = new QToolButton(tabwidget);
     auto *menu = new QToolButton(tabwidget);
+    auto *goback = new QToolButton(tabwidget);
+    auto *goforward = new QToolButton(tabwidget);
+    auto *reload = new QToolButton(tabwidget);
     auto *rightcorner = new QWidget(tabwidget);
     auto *rightlayout = new QHBoxLayout(rightcorner);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
+    rightlayout->addWidget(goback);
+    rightlayout->addWidget(reload);
+    rightlayout->addWidget(goforward);
     rightlayout->addWidget(newtab);
     rightlayout->addWidget(menu);
 
@@ -61,6 +106,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     saveSettings->setText("💾");
     closeall->setText("X");
     newtab->setText("+");
+    goback->setText("<");
+    reload->setText("⟳");
+    goforward->setText(">");
     newtab->setAutoRaise(true);
 
     tabwidget->setTabsClosable(true);
@@ -81,16 +129,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->addStretch();
     settingsBarLayout->addWidget(saveSettings);
     settingsBarLayout->addWidget(closesettings);
+    auto *historyScroll = new QScrollArea(central);
+    historyScroll->setWidgetResizable(true);
+    auto *historyContent = new QWidget;
+    m_historyLayout = new QVBoxLayout(historyContent);
+    historyScroll->setWidget(historyContent);
+    historyScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     layout->addWidget(settingsBar);
     layout->addWidget(searchengine);
+    layout->addWidget(historyScroll, 1);
     layout->addWidget(linedit);
     layout->addWidget(tabwidget, 1);
-    layout->addStretch(0);
     setCentralWidget(central);
 
     settingsBar->hide();
     searchengine->hide();
+    historyScroll->hide();
 
     connect(linedit, &QLineEdit::returnPressed, this, [this, tabwidget, linedit]() {
         auto *current = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
@@ -149,6 +204,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             linedit->clear();
     });
 
+    connect(goback, &QToolButton::clicked, this, [tabwidget]() {
+        auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+        if (v) v->back();
+    });
+
+    connect(goforward, &QToolButton::clicked, this, [tabwidget]() {
+        auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+        if (v) v->forward();
+    });
+
+    connect(reload, &QToolButton::clicked, this, [tabwidget]() {
+        auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+        if (v) v->reload();
+    });
+
     auto addNewTab = [this, tabwidget, linedit](const QUrl &url) {
         auto *view = new QWebEngineView(tabwidget);
         auto *page = new QWebEnginePage(m_profile, view);
@@ -165,9 +235,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
                 linedit->setText(u.toString());
         });
 
+        connect(view, &QWebEngineView::loadFinished, this, [this, view](bool ok) {
+            if (!ok) return;
+            const QString pageUrl = view->url().toString();
+            if (pageUrl.isEmpty() || pageUrl == "about:blank") return;
+            m_db.addurl(view->title(), pageUrl);
+        });
+
         const int index = tabwidget->addTab(view, "New Tab");
         tabwidget->setCurrentIndex(index);
         view->setUrl(url);
+    };
+
+    m_openUrl = [addNewTab, closesettings](const QUrl &u) {
+        addNewTab(u);
+        closesettings->click();
     };
 
     connect(tabwidget, &QTabWidget::tabCloseRequested, this, [this, tabwidget](int index) {
@@ -190,22 +272,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         m_db.savesearchengine(text);
         currentsearchengine = text;
     });
-    connect(menu, &QToolButton::clicked, this, [tabwidget, linedit, closesettings, searchengine, settingsBar]() {
+
+    connect(menu, &QToolButton::clicked, this,
+            [this, tabwidget, linedit, closesettings, searchengine, settingsBar, historyScroll]() {
         tabwidget->hide();
         linedit->hide();
         closesettings->show();
         settingsBar->show();
         searchengine->show();
+        historyScroll->show();
+        refreshHistory();
     });
 
-    connect(closesettings, &QToolButton::clicked, this, [searchengine, closesettings, tabwidget, linedit, settingsBar]() {
+    connect(closesettings, &QToolButton::clicked, this,
+            [searchengine, closesettings, tabwidget, linedit, settingsBar, historyScroll]() {
         searchengine->hide();
         closesettings->hide();
+        historyScroll->hide();
+        settingsBar->hide();
         tabwidget->show();
         linedit->show();
-        searchengine->hide();
-        settingsBar->hide();
-
     });
 
     connect(closeall, &QToolButton::clicked, this, [this, tabwidget, addNewTab]() {
@@ -224,4 +310,43 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     addNewTab(QUrl(currentsearchengine));
+}
+
+void MainWindow::refreshHistory()
+{
+    while (QLayoutItem *item = m_historyLayout->takeAt(0)) {
+        if (QWidget *w = item->widget())
+            w->deleteLater();
+        delete item;
+    }
+
+    const QList<HistoryEntry> entries = m_db.loadhistory();
+    for (const HistoryEntry &e : entries) {
+        auto *row = new QWidget;
+        auto *rowLayout = new QHBoxLayout(row);
+        rowLayout->setContentsMargins(0, 0, 0, 0);
+
+        const QString shown = e.name.isEmpty() ? e.url
+                                               : QString("%1 – %2").arg(e.name, e.url);
+        auto *linkBtn = new ElidedButton(shown);
+        auto *deleteBtn = new QPushButton("X");
+
+        rowLayout->addWidget(linkBtn, 1);
+        rowLayout->addWidget(deleteBtn);
+
+        const int id = e.id;
+        const QString url = e.url;
+
+        connect(linkBtn, &QPushButton::clicked, this, [this, url]() {
+            if (m_openUrl) m_openUrl(QUrl(url));
+        });
+
+        connect(deleteBtn, &QPushButton::clicked, this, [this, id]() {
+            if (m_db.deletehistory(id))
+                refreshHistory();
+        });
+
+        m_historyLayout->addWidget(row);
+    }
+    m_historyLayout->addStretch();
 }

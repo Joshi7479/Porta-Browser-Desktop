@@ -123,3 +123,42 @@ void DatabaseManager::printHistory()
                  << q.value(2).toString();
     }
 }
+
+QList<HistoryEntry> DatabaseManager::loadhistory()
+{
+    QList<HistoryEntry> result;
+
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return result;
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT id, name, url FROM history ORDER BY id DESC")) {
+        qWarning() << q.lastError().text();
+        return result;
+    }
+
+    while (q.next()) {
+        HistoryEntry e;
+        e.id   = q.value(0).toInt();
+        e.name = q.value(1).toString();
+        e.url  = q.value(2).toString();
+        result.append(e);
+    }
+    return result;
+}
+
+bool DatabaseManager::deletehistory(int id)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("DELETE FROM history WHERE id = :id");
+    q.bindValue(":id", id);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}

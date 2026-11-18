@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>icon.png</file>
+        <file>porta-browser.png</file>
     </qresource>
 </RCC>

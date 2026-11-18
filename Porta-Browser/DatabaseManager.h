@@ -2,7 +2,13 @@
 #define PORTA_BROWSER_DATABASEMANAGER_H
 
 #include <QString>
+#include <QList>
 
+struct HistoryEntry {
+    int id;
+    QString name;
+    QString url;
+};
 class DatabaseManager
 {
 public:
@@ -15,6 +21,8 @@ public:
     bool savesearchengine(const QString &searchengineurl);
     QString loadsearchengine();
     void printHistory();
+    QList <HistoryEntry> loadhistory();
+    bool deletehistory(int id);
 
 private:
     QString m_connectionName;
