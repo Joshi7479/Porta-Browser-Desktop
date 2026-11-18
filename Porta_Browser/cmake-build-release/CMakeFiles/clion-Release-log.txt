@@ -1,5 +1,0 @@
-/home/joshua/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/home/joshua/.local/share/JetBrains/Toolbox/apps/clion/bin/ninja/linux/x64/ninja -G Ninja -S /home/joshua/CLionProjects/Porta_Browser -B /home/joshua/CLionProjects/Porta_Browser/cmake-build-release
--- Could NOT find Cups (missing: CUPS_LIBRARIES CUPS_INCLUDE_DIR) 
--- Configuring done (0.8s)
--- Generating done (0.2s)
--- Build files have been written to: /home/joshua/CLionProjects/Porta_Browser/cmake-build-release

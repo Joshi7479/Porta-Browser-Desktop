@@ -1,3 +1,0 @@
-/home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/TGZ/Porta-Browser-0.0.5-Linux/bin/Porta_Browser
-/home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/TGZ/Porta-Browser-0.0.5-Linux/share/applications/porta-browser.desktop
-/home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/TGZ/Porta-Browser-0.0.5-Linux/share/icons/hicolor/256x256/apps/icon.png
