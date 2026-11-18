@@ -1,0 +1,8 @@
+Architecture: 
+Description: A simple, fast, lightweight Browser
+Maintainer: Joshi7479 <Joshi7479@proton.me>
+Package: porta-browser
+Priority: optional
+Section: web
+Version: 0.0.5
+Installed-Size: 129

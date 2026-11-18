@@ -3,6 +3,7 @@
 //
 
 #include "DatabaseManager.h"
+#include <QWebEngineView>
 
 #ifndef PORTA_BROWSER_MAINWINDOW_H
 #define PORTA_BROWSER_MAINWINDOW_H
@@ -15,9 +16,13 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 private:
+    QString currenturl = "https://duckduckgo.com";
+private:
     bool disableclose = false;
 private:
-    QString currentsearchengine = QStringLiteral("http://www.duckduckgo.com");
+    QString currentsearchengine = QStringLiteral("https://www.duckduckgo.com");
+private:
+    QWebEngineProfile *m_profile = nullptr;
 private:
 DatabaseManager m_db;
 };

@@ -1,18 +1,18 @@
 Building target platforms: x86_64
 Building for target x86_64
 + umask 022
-+ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
-+ mv /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/tmpBBroot
++ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
++ mv /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/tmpBBroot
 + RPM_EC=0
 ++ jobs -p
 + exit 0
 + umask 022
-+ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
-+ '[' /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux '!=' / ']'
-+ rm -rf /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
-++ dirname /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
++ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
++ '[' /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux '!=' / ']'
++ rm -rf /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux
+++ dirname /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux
 + mkdir -p /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM
-+ mkdir /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
++ mkdir /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux
 + CFLAGS='-O2 -flto=auto -ffat-lto-objects -fexceptions -g -grecord-gcc-switches -pipe -Wall -Werror=format-security -Wp,-U_FORTIFY_SOURCE,-D_FORTIFY_SOURCE=3 -Wp,-D_GLIBCXX_ASSERTIONS -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1 -fstack-protector-strong -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -m64 -march=x86-64 -mtune=generic -fasynchronous-unwind-tables -fstack-clash-protection -fcf-protection -mtls-dialect=gnu2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer  '
 + export CFLAGS
 + CXXFLAGS='-O2 -flto=auto -ffat-lto-objects -fexceptions -g -grecord-gcc-switches -pipe -Wall -Werror=format-security -Wp,-U_FORTIFY_SOURCE,-D_FORTIFY_SOURCE=3 -Wp,-D_GLIBCXX_ASSERTIONS -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1 -fstack-protector-strong -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -m64 -march=x86-64 -mtune=generic -fasynchronous-unwind-tables -fstack-clash-protection -fcf-protection -mtls-dialect=gnu2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer  '
@@ -33,9 +33,9 @@ Building for target x86_64
 + export CC
 + CXX=g++
 + export CXX
-+ '[' -e /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux ']'
-+ rm -rf /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
-+ mv /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/tmpBBroot /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
++ '[' -e /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux ']'
++ rm -rf /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux
++ mv /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/tmpBBroot /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux
 + /usr/lib/rpm/check-buildroot
 + /usr/lib/rpm/redhat/brp-ldconfig
 + COMPRESS='gzip -9 -n'
@@ -50,18 +50,18 @@ Building for target x86_64
 + /usr/lib/rpm/redhat/brp-python-rpm-in-distinfo
 + env /usr/lib/rpm/redhat/brp-python-bytecompile '' 1 0 -j12
 + /usr/lib/rpm/redhat/brp-python-hardlink
-+ /usr/bin/add-det --brp -j12 /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux
-+ /usr/bin/linkdupes --brp /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.3-Linux/usr
++ /usr/bin/add-det --brp -j12 /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux
++ /usr/bin/linkdupes --brp /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/Porta-Browser-0.0.5-Linux/usr
 + umask 022
-+ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
++ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
 + RPM_EC=0
 ++ jobs -p
 + exit 0
 + umask 022
-+ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
-+ test -d /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
-+ /usr/bin/chmod -Rf a+rX,u+w,g-w,o-w /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
-+ rm -rf /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.3-build
++ cd /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
++ test -d /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
++ /usr/bin/chmod -Rf a+rX,u+w,g-w,o-w /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
++ rm -rf /home/joshua/CLionProjects/Porta_Browser/cmake-build-release/_CPack_Packages/Linux/RPM/BUILD/porta-browser-0.0.5-build
 + RPM_EC=0
 ++ jobs -p
 + exit 0
