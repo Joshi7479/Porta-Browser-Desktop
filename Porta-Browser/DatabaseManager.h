@@ -31,8 +31,11 @@ public:
     QList <HistoryEntry> loadhistory();
     bool deletehistory(int id);
     QList <bookmarks> loadbookmarks();
-    bool deletebookmarks(int id);
+    bool deletebookmarks(QString url);
     bool addbookmark(const QString &name, const QString &url);
+    bool bookmarkExists(const QString &url);
+    bool savedisableclosestate(const bool &disableclosestate);
+    bool loaddisableclosestate();
 
 private:
     QString m_connectionName;

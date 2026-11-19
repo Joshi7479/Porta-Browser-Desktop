@@ -52,6 +52,13 @@ bool DatabaseManager::createTables()
         return false;
     }
 
+    if (!q.exec("CREATE TABLE IF NOT EXISTS closeifalltabsclosed ("
+        "id INTEGER PRIMARY KEY CHECK (id = 1), "
+        "disableclose BOOLEAN NOT NULL DEFAULT 0)")) {
+        qWarning() << q.lastError().text();
+        return false;
+                }
+
     if (!q.exec("CREATE TABLE IF NOT EXISTS searchengine ("
                 "id INTEGER PRIMARY KEY CHECK (id = 1), "
                 "searchengineurl TEXT NOT NULL)")) {
@@ -134,6 +141,39 @@ QString DatabaseManager::loadsearchengine()
     return q.next() ? q.value(0).toString() : QString();
 }
 
+bool DatabaseManager::savedisableclosestate(const bool &disableclosestate)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("INSERT INTO closeifalltabsclosed (id, disableclose) "
+          "VALUES (1, :disableclosestate) "
+          "ON CONFLICT(id) DO UPDATE SET disableclose = excluded.disableclose");
+    q.bindValue(":disableclosestate", disableclosestate);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+bool DatabaseManager::loaddisableclosestate()
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen())
+        return false;
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT disableclose FROM closeifalltabsclosed WHERE id = 1")) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+
+    return q.next() ? q.value(0).toBool() : false;
+}
+
 void DatabaseManager::printHistory()
 {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
@@ -210,18 +250,31 @@ QList<bookmarks> DatabaseManager::loadbookmarks()
     return result;
 }
 
-bool DatabaseManager::deletebookmarks(int id)
+bool DatabaseManager::deletebookmarks(QString url)
 {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
     if (!db.isOpen()) return false;
 
     QSqlQuery q(db);
-    q.prepare("DELETE FROM bookmarks WHERE id = :id");
-    q.bindValue(":id", id);
+    q.prepare("DELETE FROM bookmarks WHERE url = :url");
+    q.bindValue(":url", url);
 
     if (!q.exec()) {
         qWarning() << q.lastError().text();
         return false;
     }
     return true;
+}
+bool DatabaseManager::bookmarkExists(const QString &url) {
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("SELECT 1 FROM bookmarks WHERE url = :url LIMIT 1");
+    q.bindValue(":url", url);
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return q.next();
 }

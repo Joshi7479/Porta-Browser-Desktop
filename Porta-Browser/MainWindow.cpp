@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QtQuick>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
@@ -25,6 +26,8 @@
 #include <QPushButton>
 #include <QFontMetrics>
 #include <QResizeEvent>
+#include <QCheckBox>
+
 
 namespace {
     class ElidedButton : public QPushButton {
@@ -92,8 +95,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *reload = new QToolButton(tabwidget);
     auto *rightcorner = new QWidget(tabwidget);
     auto *rightlayout = new QHBoxLayout(rightcorner);
+    auto *leftcorner = new QWidget(tabwidget);
+    auto *leftlayout = new QHBoxLayout(leftcorner);
     auto *star = new QToolButton(tabwidget);
     auto *bookmarkbutton = new QToolButton(tabwidget);
+    auto *disableclosebutton = new QCheckBox("Keep browser open when closing last tab", central);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
@@ -102,8 +108,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     rightlayout->addWidget(goback);
     rightlayout->addWidget(reload);
     rightlayout->addWidget(goforward);
-    rightlayout->addWidget(newtab);
     rightlayout->addWidget(menu);
+
+    leftlayout->addWidget(closeall);
+    leftlayout->addWidget(newtab);
+    leftlayout->setContentsMargins(0, 0, 0, 0);
+    leftlayout->setSpacing(2);
 
     bookmarkbutton->setText("📚");
     star->setText("⭐");
@@ -120,7 +130,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     tabwidget->setTabsClosable(true);
     tabwidget->setMovable(true);
     tabwidget->setCornerWidget(rightcorner, Qt::TopRightCorner);
-    tabwidget->setCornerWidget(closeall, Qt::TopLeftCorner);
+    tabwidget->setCornerWidget(leftcorner, Qt::TopLeftCorner);
 
     searchengine->setPlaceholderText("Search-Engine");
     searchengine->setText(currentsearchengine);
@@ -133,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->setContentsMargins(0, 0, 0, 0);
     settingsBarLayout->setSpacing(2);
     settingsBarLayout->addStretch();
+    settingsBarLayout->addWidget(disableclosebutton);
     settingsBarLayout->addWidget(saveSettings);
     settingsBarLayout->addWidget(closesettings);
     auto *historyScroll = new QScrollArea(central);
@@ -162,6 +173,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBar->hide();
     searchengine->hide();
     historyScroll->hide();
+    disableclosestate = m_db.loaddisableclosestate();
+    disableclosebutton->setChecked(disableclosestate);
 
     connect(linedit, &QLineEdit::returnPressed, this, [this, tabwidget, linedit]() {
         auto *current = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
@@ -235,6 +248,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         if (v) v->reload();
     });
 
+    connect(disableclosebutton, &QToolButton::clicked, this, [this, tabwidget](bool checked) {
+        m_db.savedisableclosestate(checked);
+        disableclosestate = true;
+    });
+
     auto addNewTab = [this, tabwidget, star, linedit](const QUrl &url) {
         auto *view = new QWebEngineView(tabwidget);
         auto *page = new QWebEnginePage(m_profile, view);
@@ -246,9 +264,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             if (i != -1) tabwidget->setTabText(i, cuttitle);
         });
 
-        connect(view, &QWebEngineView::urlChanged, this, [tabwidget, view, linedit](const QUrl &u) {
+        connect(view, &QWebEngineView::urlChanged, this, [this, tabwidget, star, view, linedit](const QUrl &u) {
             if (tabwidget->currentWidget() == view)
                 linedit->setText(u.toString());
+
+            if (m_db.bookmarkExists(linedit->text())) {
+                star->setText("🌟");
+            } else {
+                star->setText("⭐");
+            }
         });
 
         connect(view, &QWebEngineView::loadFinished, this, [this, view](bool ok) {
@@ -258,14 +282,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             m_db.addurl(view->title(), pageUrl);
         });
 
-        connect(star, &QToolButton::clicked, this, [this, tabwidget]() {
-            auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
-            if (v) m_db.addbookmark(v->title(), v->url().toString());
-        });
-
         const int index = tabwidget->addTab(view, "New Tab");
         tabwidget->setCurrentIndex(index);
         view->setUrl(url);
+
     };
 
     m_openUrl = [addNewTab, closesettings](const QUrl &u) {
@@ -273,11 +293,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         closesettings->click();
     };
 
-    connect(tabwidget, &QTabWidget::tabCloseRequested, this, [this, tabwidget](int index) {
+    connect(star, &QToolButton::clicked, this, [this, star, tabwidget]() {
+    auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+    if (!v) return;
+    const QString url = v->url().toString();
+    if (url.isEmpty() || url == "about:blank") return;
+    if (m_db.bookmarkExists(url)) {
+        m_db.deletebookmarks(url);
+        star->setText("⭐");
+    } else {
+        m_db.addbookmark(v->title(), url);
+        star->setText("🌟");
+    }
+    });
+
+    connect(tabwidget, &QTabWidget::tabCloseRequested, this, [this, addNewTab, tabwidget](int index) {
         QWidget *w = tabwidget->widget(index);
         tabwidget->removeTab(index);
         w->deleteLater();
-        if (tabwidget->count() == 0 && !disableclose) close();
+        disableclosestate = m_db.loaddisableclosestate();
+        if (tabwidget->count() == 0 && !disableclose && !disableclosestate) {
+            close();
+        } else if (tabwidget->count() == 0) {
+            addNewTab(QUrl(currentsearchengine));
+        };
+
     });
 
     connect(searchengine, &QLineEdit::returnPressed, this, [this, searchengine]() {
@@ -295,7 +335,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(menu, &QToolButton::clicked, this,
-            [this, tabwidget, linedit, closesettings, searchengine, settingsBar, historyScroll]() {
+            [this, tabwidget, linedit, closesettings, searchengine, disableclosebutton, settingsBar, historyScroll]() {
+
         tabwidget->hide();
         linedit->hide();
         closesettings->show();
@@ -411,8 +452,8 @@ void MainWindow::refreshBookmarks()
             if (m_openUrl) m_openUrl(QUrl(url));
         });
 
-        connect(deleteBtn, &QPushButton::clicked, this, [this, id]() {
-            if (m_db.deletebookmarks(id))
+        connect(deleteBtn, &QPushButton::clicked, this, [this, url]() {
+            if (m_db.deletebookmarks(url))
                 refreshBookmarks();
         });
 

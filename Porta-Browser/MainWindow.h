@@ -22,6 +22,7 @@ private:
     QString currenturl = "https://duckduckgo.com";
     QString currentsearchengine = QStringLiteral("https://www.duckduckgo.com");
     bool disableclose = false;
+    bool disableclosestate = false;
 
     QVBoxLayout *m_historyLayout = nullptr;
     QVBoxLayout *m_bookmarkLayout = nullptr;
