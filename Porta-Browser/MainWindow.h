@@ -16,7 +16,7 @@ public:
 
 private:
     void refreshHistory();
-
+    void refreshBookmarks();
     std::function<void(const QUrl &)> m_openUrl;
     QString text = "";
     QString currenturl = "https://duckduckgo.com";
@@ -24,6 +24,7 @@ private:
     bool disableclose = false;
 
     QVBoxLayout *m_historyLayout = nullptr;
+    QVBoxLayout *m_bookmarkLayout = nullptr;
     QWebEngineProfile *m_profile = nullptr;
     DatabaseManager m_db;
 };

@@ -92,15 +92,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *reload = new QToolButton(tabwidget);
     auto *rightcorner = new QWidget(tabwidget);
     auto *rightlayout = new QHBoxLayout(rightcorner);
+    auto *star = new QToolButton(tabwidget);
+    auto *bookmarkbutton = new QToolButton(tabwidget);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
+    rightlayout->addWidget(bookmarkbutton);
+    rightlayout->addWidget(star);
     rightlayout->addWidget(goback);
     rightlayout->addWidget(reload);
     rightlayout->addWidget(goforward);
     rightlayout->addWidget(newtab);
     rightlayout->addWidget(menu);
 
+    bookmarkbutton->setText("📚");
+    star->setText("⭐");
     menu->setText("≡");
     closesettings->setText("X");
     saveSettings->setText("💾");
@@ -136,13 +142,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     historyScroll->setWidget(historyContent);
     historyScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    auto *bookmarkscroll = new QScrollArea(central);
+    bookmarkscroll->setWidgetResizable(true);
+    auto *bookmarkContent = new QWidget;
+    m_bookmarkLayout = new QVBoxLayout(bookmarkContent);
+    bookmarkscroll->setWidget(bookmarkContent);
+    bookmarkscroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     layout->addWidget(settingsBar);
     layout->addWidget(searchengine);
     layout->addWidget(historyScroll, 1);
+    layout->addWidget(bookmarkscroll, 1);
     layout->addWidget(linedit);
     layout->addWidget(tabwidget, 1);
     setCentralWidget(central);
 
+    bookmarkContent->hide();
+    bookmarkscroll->hide();
     settingsBar->hide();
     searchengine->hide();
     historyScroll->hide();
@@ -219,7 +235,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         if (v) v->reload();
     });
 
-    auto addNewTab = [this, tabwidget, linedit](const QUrl &url) {
+    auto addNewTab = [this, tabwidget, star, linedit](const QUrl &url) {
         auto *view = new QWebEngineView(tabwidget);
         auto *page = new QWebEnginePage(m_profile, view);
         view->setPage(page);
@@ -240,6 +256,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             const QString pageUrl = view->url().toString();
             if (pageUrl.isEmpty() || pageUrl == "about:blank") return;
             m_db.addurl(view->title(), pageUrl);
+        });
+
+        connect(star, &QToolButton::clicked, this, [this, tabwidget]() {
+            auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+            if (v) m_db.addbookmark(v->title(), v->url().toString());
         });
 
         const int index = tabwidget->addTab(view, "New Tab");
@@ -284,14 +305,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         refreshHistory();
     });
 
+    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, bookmarkContent, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+        tabwidget->hide();
+        linedit->hide();
+        bookmarkContent->show();
+        closesettings->show();
+        settingsBar->show();
+        bookmarkscroll->show();
+        refreshBookmarks();
+    });
+
     connect(closesettings, &QToolButton::clicked, this,
-            [searchengine, closesettings, tabwidget, linedit, settingsBar, historyScroll]() {
+            [searchengine, closesettings, tabwidget, linedit, settingsBar, bookmarkscroll, historyScroll]() {
         searchengine->hide();
         closesettings->hide();
         historyScroll->hide();
         settingsBar->hide();
         tabwidget->show();
         linedit->show();
+        bookmarkscroll->hide();
     });
 
     connect(closeall, &QToolButton::clicked, this, [this, tabwidget, addNewTab]() {
@@ -349,4 +381,42 @@ void MainWindow::refreshHistory()
         m_historyLayout->addWidget(row);
     }
     m_historyLayout->addStretch();
+}
+void MainWindow::refreshBookmarks()
+{
+    while (QLayoutItem *item = m_bookmarkLayout->takeAt(0)) {
+        if (QWidget *w = item->widget())
+            w->deleteLater();
+        delete item;
+    }
+
+    const QList<bookmarks> entries = m_db.loadbookmarks();
+    for (const bookmarks &e : entries) {
+        auto *row = new QWidget;
+        auto *rowLayout = new QHBoxLayout(row);
+        rowLayout->setContentsMargins(0, 0, 0, 0);
+
+        const QString shown = e.name.isEmpty() ? e.url
+                                               : QString("%1 – %2").arg(e.name, e.url);
+        auto *linkBtn = new ElidedButton(shown);
+        auto *deleteBtn = new QPushButton("X");
+
+        rowLayout->addWidget(linkBtn, 1);
+        rowLayout->addWidget(deleteBtn);
+
+        const int id = e.id;
+        const QString url = e.url;
+
+        connect(linkBtn, &QPushButton::clicked, this, [this, url]() {
+            if (m_openUrl) m_openUrl(QUrl(url));
+        });
+
+        connect(deleteBtn, &QPushButton::clicked, this, [this, id]() {
+            if (m_db.deletebookmarks(id))
+                refreshBookmarks();
+        });
+
+        m_bookmarkLayout->addWidget(row);
+    }
+    m_bookmarkLayout->addStretch();
 }

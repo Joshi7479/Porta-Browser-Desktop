@@ -58,6 +58,13 @@ bool DatabaseManager::createTables()
         qWarning() << q.lastError().text();
         return false;
     }
+    if (!q.exec("CREATE TABLE IF NOT EXISTS bookmarks ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "name TEXT NOT NULL, "
+                "url TEXT NOT NULL)")) {
+        qWarning() << q.lastError().text();
+        return false;
+                }
 
     return true;
 }
@@ -78,6 +85,23 @@ bool DatabaseManager::addurl(const QString &name, const QString &url)
     }
     return true;
 }
+bool DatabaseManager::addbookmark(const QString &name, const QString &url)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("INSERT INTO bookmarks (name, url) VALUES (:name, :url)");
+    q.bindValue(":name", name);
+    q.bindValue(":url", url);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
 
 bool DatabaseManager::savesearchengine(const QString &searchengineurl)
 {
@@ -154,6 +178,45 @@ bool DatabaseManager::deletehistory(int id)
 
     QSqlQuery q(db);
     q.prepare("DELETE FROM history WHERE id = :id");
+    q.bindValue(":id", id);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+QList<bookmarks> DatabaseManager::loadbookmarks()
+{
+    QList<bookmarks> result;
+
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return result;
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT id, name, url FROM bookmarks ORDER BY id DESC")) {
+        qWarning() << q.lastError().text();
+        return result;
+    }
+
+    while (q.next()) {
+        bookmarks e;
+        e.id   = q.value(0).toInt();
+        e.name = q.value(1).toString();
+        e.url  = q.value(2).toString();
+        result.append(e);
+    }
+    return result;
+}
+
+bool DatabaseManager::deletebookmarks(int id)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("DELETE FROM bookmarks WHERE id = :id");
     q.bindValue(":id", id);
 
     if (!q.exec()) {
