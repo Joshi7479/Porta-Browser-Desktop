@@ -10,6 +10,7 @@ But:
 This Browser is in a really early state. So a few things might not work (as expected)!
 
 How to install?
+
 For Debian based distros (like Mint or Ubuntu):
 1. Download the .deb.
 2. Open a Terminal in the directory where the .deb is.
