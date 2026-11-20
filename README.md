@@ -26,3 +26,5 @@ For Arch based Distros (like CachyOS or EndeavourOS):
 3. Open a terminal in the new directory.
 4. Execute make.
 5. -> sudo make install.
+
+Porta Browser mad by <a href=https://github.com/Joshi7479>Joshi7479</a>
