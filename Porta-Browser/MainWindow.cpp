@@ -138,6 +138,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *resetallcookies = new QToolButton(central);
     auto *hotkeyurledit = new QLineEdit(central);
     auto *hotkeybutton = new QToolButton(central);
+    auto *closebookmarks = new QToolButton(central);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
@@ -159,6 +160,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     star->setText("⭐");
     menu->setText("≡");
     closesettings->setText("X");
+    closebookmarks->setText("X");
     saveSettings->setText("💾");
     closeall->setText("X");
     newtab->setText("+");
@@ -187,6 +189,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->addWidget(disableclosebutton);
     settingsBarLayout->addWidget(resetallcookies);
     settingsBarLayout->addWidget(saveSettings);
+    settingsBarLayout->addWidget(closebookmarks);
     settingsBarLayout->addWidget(closesettings);
     auto *historyScroll = new QScrollArea(central);
     historyScroll->setWidgetResizable(true);
@@ -472,14 +475,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         refreshHistory();
     });
 
-    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->hide();
         linedit->hide();
         bookmarkContent->show();
-        closesettings->show();
         settingsBar->show();
+        closesettings->hide();
+        resetallcookies->hide();
+        disableclosebutton->hide();
         bookmarkscroll->show();
+        saveSettings->hide();
         refreshBookmarks();
+    });
+
+    connect(closebookmarks, &QToolButton::clicked, this, [this, tabwidget, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+        tabwidget->show();
+        linedit->show();
+        bookmarkContent->hide();
+        settingsBar->hide();
+        closesettings->show();
+        resetallcookies->show();
+        disableclosebutton->show();
+        bookmarkscroll->hide();
+        saveSettings->show();
     });
 
     connect(closesettings, &QToolButton::clicked, this,
