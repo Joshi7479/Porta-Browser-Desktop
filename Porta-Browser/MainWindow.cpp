@@ -27,6 +27,10 @@
 #include <QFontMetrics>
 #include <QResizeEvent>
 #include <QCheckBox>
+#include <QWebEngineCookieStore>
+#include <QWebEngineSettings>
+#include <functional>
+#include <QWebEnginePermission>
 
 
 namespace {
@@ -58,6 +62,34 @@ namespace {
         }
 
         QString m_full;
+    };
+}
+
+namespace {
+    class BrowserPage : public QWebEnginePage {
+    public:
+        using CreateTabFn = std::function<QWebEnginePage *()>;
+
+        BrowserPage(QWebEngineProfile *profile, CreateTabFn createTab, QObject *parent = nullptr)
+            : QWebEnginePage(profile, parent), m_createTab(std::move(createTab))
+        {
+            settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
+            settings()->setAttribute(QWebEngineSettings::JavascriptCanPaste, true);
+
+            connect(this, &QWebEnginePage::permissionRequested, this,
+                    [](QWebEnginePermission p) {
+                if (p.permissionType() == QWebEnginePermission::PermissionType::ClipboardReadWrite)
+                    p.grant();
+            });
+        }
+
+    protected:
+        QWebEnginePage *createWindow(WebWindowType) override {
+            return m_createTab ? m_createTab() : nullptr;
+        }
+
+    private:
+        CreateTabFn m_createTab;
     };
 }
 
@@ -100,6 +132,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *star = new QToolButton(tabwidget);
     auto *bookmarkbutton = new QToolButton(tabwidget);
     auto *disableclosebutton = new QCheckBox("Keep browser open when closing last tab", central);
+    auto *resetallcookies = new QToolButton(central);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
@@ -125,6 +158,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     goback->setText("<");
     reload->setText("⟳");
     goforward->setText(">");
+    resetallcookies->setText("Delete all cookies");
     newtab->setAutoRaise(true);
 
     tabwidget->setTabsClosable(true);
@@ -144,6 +178,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->setSpacing(2);
     settingsBarLayout->addStretch();
     settingsBarLayout->addWidget(disableclosebutton);
+    settingsBarLayout->addWidget(resetallcookies);
     settingsBarLayout->addWidget(saveSettings);
     settingsBarLayout->addWidget(closesettings);
     auto *historyScroll = new QScrollArea(central);
@@ -250,12 +285,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     connect(disableclosebutton, &QToolButton::clicked, this, [this, tabwidget](bool checked) {
         m_db.savedisableclosestate(checked);
-        disableclosestate = true;
+        disableclosestate = checked;
     });
 
-    auto addNewTab = [this, tabwidget, star, linedit](const QUrl &url) {
+    connect(resetallcookies, &QToolButton::clicked, this, [this]() {
+        m_profile->cookieStore()->deleteAllCookies();
+    });
+
+    auto addNewTab = std::make_shared<std::function<QWebEngineView *(const QUrl &)>>();
+
+    *addNewTab = [this, tabwidget, star, linedit, addNewTab](const QUrl &url) -> QWebEngineView * {
         auto *view = new QWebEngineView(tabwidget);
-        auto *page = new QWebEnginePage(m_profile, view);
+
+        auto *page = new BrowserPage(m_profile,
+            [addNewTab]() -> QWebEnginePage * {
+                return (*addNewTab)(QUrl())->page();
+            },
+            view);
         view->setPage(page);
 
         connect(view, &QWebEngineView::titleChanged, this, [tabwidget, view](const QString &title) {
@@ -282,14 +328,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             m_db.addurl(view->title(), pageUrl);
         });
 
+
         const int index = tabwidget->addTab(view, "New Tab");
         tabwidget->setCurrentIndex(index);
-        view->setUrl(url);
-
+        if (!url.isEmpty())
+            view->setUrl(url);
+        return view;
     };
 
     m_openUrl = [addNewTab, closesettings](const QUrl &u) {
-        addNewTab(u);
+        (*addNewTab)(u);
         closesettings->click();
     };
 
@@ -315,7 +363,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         if (tabwidget->count() == 0 && !disableclose && !disableclosestate) {
             close();
         } else if (tabwidget->count() == 0) {
-            addNewTab(QUrl(currentsearchengine));
+            (*addNewTab)(QUrl(currentsearchengine));
         };
 
     });
@@ -346,7 +394,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         refreshHistory();
     });
 
-    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, bookmarkContent, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->hide();
         linedit->hide();
         bookmarkContent->show();
@@ -374,15 +422,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             tabwidget->removeTab(0);
             w->deleteLater();
         }
-        addNewTab(QUrl(currentsearchengine));
+        (*addNewTab)(QUrl(currentsearchengine));
         disableclose = false;
     });
 
     connect(newtab, &QToolButton::clicked, this, [this, addNewTab]() {
-        addNewTab(QUrl(currentsearchengine));
+        (*addNewTab)(QUrl(currentsearchengine));
     });
 
-    addNewTab(QUrl(currentsearchengine));
+    (*addNewTab)(QUrl(currentsearchengine));
 }
 
 void MainWindow::refreshHistory()
