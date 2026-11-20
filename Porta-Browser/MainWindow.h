@@ -19,10 +19,13 @@ private:
     void refreshBookmarks();
     std::function<void(const QUrl &)> m_openUrl;
     QString text = "";
+    QString text2 = "";
     QString currenturl = "https://duckduckgo.com";
     QString currentsearchengine = QStringLiteral("https://www.duckduckgo.com");
+    QString currenthotkeyurl = currentsearchengine;
     bool disableclose = false;
     bool disableclosestate = false;
+    bool m_wasMaximized = false;
 
     QVBoxLayout *m_historyLayout = nullptr;
     QVBoxLayout *m_bookmarkLayout = nullptr;

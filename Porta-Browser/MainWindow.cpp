@@ -3,7 +3,6 @@
 #include <QApplication>
 #include <QtQuick>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QLineEdit>
 #include <QWebEngineView>
 #include <QTabWidget>
@@ -20,17 +19,16 @@
 #include <QWebEngineDownloadRequest>
 #include <QFileDialog>
 #include <QScrollArea>
-#include <QLabel>
-#include <QPushButton>
 #include <QLayoutItem>
 #include <QPushButton>
 #include <QFontMetrics>
-#include <QResizeEvent>
 #include <QCheckBox>
 #include <QWebEngineCookieStore>
 #include <QWebEngineSettings>
 #include <functional>
 #include <QWebEnginePermission>
+#include <QWebEngineFullScreenRequest>
+#include <QTabBar>
 
 
 namespace {
@@ -106,10 +104,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         qWarning() << "Internal service: m_db.open or createTables failed!";
     } else {
         currentsearchengine = m_db.loadsearchengine();
+        currenthotkeyurl = m_db.loadhotkey();
     }
 
     if (currentsearchengine.isEmpty()) {
         currentsearchengine = "https://duckduckgo.com";
+    }
+
+    if (currenthotkeyurl.isEmpty()) {
+        currenthotkeyurl = "empty";
     }
 
     auto *central = new QWidget(this);
@@ -133,10 +136,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *bookmarkbutton = new QToolButton(tabwidget);
     auto *disableclosebutton = new QCheckBox("Keep browser open when closing last tab", central);
     auto *resetallcookies = new QToolButton(central);
+    auto *hotkeyurledit = new QLineEdit(central);
+    auto *hotkeybutton = new QToolButton(central);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
     rightlayout->addWidget(bookmarkbutton);
+    rightlayout->addWidget(hotkeybutton);
     rightlayout->addWidget(star);
     rightlayout->addWidget(goback);
     rightlayout->addWidget(reload);
@@ -149,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     leftlayout->setSpacing(2);
 
     bookmarkbutton->setText("📚");
+    hotkeybutton->setText("⌘");
     star->setText("⭐");
     menu->setText("≡");
     closesettings->setText("X");
@@ -159,6 +166,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     reload->setText("⟳");
     goforward->setText(">");
     resetallcookies->setText("Delete all cookies");
+    hotkeyurledit->setPlaceholderText("Set hotkey URL || Leave blank to disable");
     newtab->setAutoRaise(true);
 
     tabwidget->setTabsClosable(true);
@@ -167,7 +175,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     tabwidget->setCornerWidget(leftcorner, Qt::TopLeftCorner);
 
     searchengine->setPlaceholderText("Search-Engine");
-    searchengine->setText(currentsearchengine);
     linedit->setPlaceholderText("URL or search");
 
     auto *settingsBar = new QWidget(central);
@@ -197,6 +204,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     layout->addWidget(settingsBar);
     layout->addWidget(searchengine);
+    layout->addWidget(hotkeyurledit);
     layout->addWidget(historyScroll, 1);
     layout->addWidget(bookmarkscroll, 1);
     layout->addWidget(linedit);
@@ -207,7 +215,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     bookmarkscroll->hide();
     settingsBar->hide();
     searchengine->hide();
+    hotkeyurledit->hide();
     historyScroll->hide();
+    if (currenthotkeyurl == "empty") {
+        hotkeybutton->hide();
+    }
     disableclosestate = m_db.loaddisableclosestate();
     disableclosebutton->setChecked(disableclosestate);
 
@@ -294,7 +306,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     auto addNewTab = std::make_shared<std::function<QWebEngineView *(const QUrl &)>>();
 
-    *addNewTab = [this, tabwidget, star, linedit, addNewTab](const QUrl &url) -> QWebEngineView * {
+    *addNewTab = [this, tabwidget, star, linedit, rightcorner, leftcorner, layout, addNewTab]
+             (const QUrl &url) -> QWebEngineView * {
         auto *view = new QWebEngineView(tabwidget);
 
         auto *page = new BrowserPage(m_profile,
@@ -303,6 +316,33 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             },
             view);
         view->setPage(page);
+        view->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+
+        connect(view->page(), &QWebEnginePage::fullScreenRequested, this,
+        [this, tabwidget, linedit, rightcorner, leftcorner, layout](QWebEngineFullScreenRequest request) {
+            request.accept();
+
+             if (request.toggleOn()) {
+                 m_wasMaximized = isMaximized();
+
+                tabwidget->tabBar()->hide();
+                rightcorner->hide();
+                leftcorner->hide();
+                linedit->hide();
+                layout->setContentsMargins(0, 0, 0, 0);
+
+                showFullScreen();
+                } else {
+                    tabwidget->tabBar()->show();
+                    rightcorner->show();
+                    leftcorner->show();
+                    linedit->show();
+                    layout->setContentsMargins(9, 9, 9, 9);
+
+                if (m_wasMaximized) showMaximized();
+                else showNormal();
+                }
+        });
 
         connect(view, &QWebEngineView::titleChanged, this, [tabwidget, view](const QString &title) {
             const int i = tabwidget->indexOf(view);
@@ -371,19 +411,56 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(searchengine, &QLineEdit::returnPressed, this, [this, searchengine]() {
         text = searchengine->text().trimmed();
         if (text.isEmpty()) return;
-        m_db.savesearchengine(text);
-        currentsearchengine = text;
+        if (text.contains("https://")) {
+            currentsearchengine = text;
+        } else if (text.contains("http://")) {
+            currentsearchengine = text;
+        } else {
+            currentsearchengine = "https://" + text;
+        }
+        m_db.savesearchengine(currentsearchengine);
     });
 
-    connect(saveSettings, &QToolButton::clicked, this, [this, searchengine]() {
+    connect(hotkeyurledit, &QLineEdit::returnPressed, this, [this, hotkeyurledit]() {
+        text2 = hotkeyurledit->text().trimmed();
+        if (text2.isEmpty()) {
+            m_db.savehotkey("empty");
+            currenthotkeyurl = "empty";
+        } else {
+            m_db.savehotkey(text2);
+            currenthotkeyurl = text2;
+        }
+    });
+
+    connect(saveSettings, &QToolButton::clicked, this, [this, searchengine, hotkeyurledit]() {
         text = searchengine->text().trimmed();
         if (text.isEmpty()) return;
-        m_db.savesearchengine(text);
+        if (text.contains("http://")) {
+            m_db.savesearchengine(text);
+        } else if (text.contains("https://")) {
+            m_db.savesearchengine(text);
+        } else {
+            m_db.savesearchengine("https://" + text);
+            text = "https://" + text;
+        }
+
         currentsearchengine = text;
+        text2 = hotkeyurledit->text().trimmed();
+        if (text2.isEmpty()) return;
+        if (text2.contains("http://")) {
+            m_db.savehotkey(text2);
+        } else if (text2.contains("https://")) {
+            m_db.savehotkey(text2);
+        } else {
+            m_db.savehotkey("https://" + text2);
+            currenthotkeyurl = text2;
+        }
+
+        currenthotkeyurl = text2;
     });
 
     connect(menu, &QToolButton::clicked, this,
-            [this, tabwidget, linedit, closesettings, searchengine, disableclosebutton, settingsBar, historyScroll]() {
+            [this, tabwidget, linedit, closesettings, searchengine, hotkeyurledit, settingsBar, historyScroll]() {
 
         tabwidget->hide();
         linedit->hide();
@@ -391,6 +468,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         settingsBar->show();
         searchengine->show();
         historyScroll->show();
+        hotkeyurledit->show();
         refreshHistory();
     });
 
@@ -405,14 +483,47 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(closesettings, &QToolButton::clicked, this,
-            [searchengine, closesettings, tabwidget, linedit, settingsBar, bookmarkscroll, historyScroll]() {
+            [this, searchengine, hotkeybutton, closesettings, tabwidget, linedit, hotkeyurledit, settingsBar, bookmarkscroll, historyScroll]() {
         searchengine->hide();
         closesettings->hide();
         historyScroll->hide();
         settingsBar->hide();
         tabwidget->show();
         linedit->show();
+        hotkeyurledit->hide();
         bookmarkscroll->hide();
+        if (currenthotkeyurl == "empty") {
+            hotkeybutton->hide();
+        } else {
+            hotkeybutton->show();
+        }
+
+        text = searchengine->text().trimmed();
+        if (text.isEmpty()) return;
+        if (text.contains("http://")) {
+            m_db.savesearchengine(text);
+        } else if (text.contains("https://")) {
+            m_db.savesearchengine(text);
+        } else {
+            m_db.savesearchengine("https://" + text);
+            text = "https://" + text;
+        }
+
+        currentsearchengine = text;
+
+
+        text2 = hotkeyurledit->text().trimmed();
+        if (text2.isEmpty()) return;
+        if (text2.contains("http://")) {
+            m_db.savehotkey(text2);
+        } else if (text2.contains("https://")) {
+            m_db.savehotkey(text2);
+        } else {
+            m_db.savehotkey("https://" + text2);
+            currenthotkeyurl = text2;
+        }
+
+        currenthotkeyurl = text2;
     });
 
     connect(closeall, &QToolButton::clicked, this, [this, tabwidget, addNewTab]() {
@@ -424,6 +535,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         }
         (*addNewTab)(QUrl(currentsearchengine));
         disableclose = false;
+    });
+
+    connect(hotkeybutton, &QToolButton::clicked, this, [this] {
+        if (currenthotkeyurl != "empty") {
+            if (currenthotkeyurl.contains("http://")) {
+                m_openUrl(QUrl(currenthotkeyurl));
+            }  else if (currenthotkeyurl.contains("https://")) {
+                m_openUrl(QUrl(currenthotkeyurl));
+            } else {
+                currenthotkeyurl = "https://" + currenthotkeyurl;
+                m_openUrl(currenthotkeyurl);
+            }
+
+        }
     });
 
     connect(newtab, &QToolButton::clicked, this, [this, addNewTab]() {
@@ -450,9 +575,11 @@ void MainWindow::refreshHistory()
         const QString shown = e.name.isEmpty() ? e.url
                                                : QString("%1 – %2").arg(e.name, e.url);
         auto *linkBtn = new ElidedButton(shown);
+        auto *sethotkeybutton = new QPushButton("Set as hotkey");
         auto *deleteBtn = new QPushButton("X");
 
         rowLayout->addWidget(linkBtn, 1);
+        rowLayout->addWidget(sethotkeybutton);
         rowLayout->addWidget(deleteBtn);
 
         const int id = e.id;
@@ -460,6 +587,11 @@ void MainWindow::refreshHistory()
 
         connect(linkBtn, &QPushButton::clicked, this, [this, url]() {
             if (m_openUrl) m_openUrl(QUrl(url));
+        });
+
+        connect(sethotkeybutton, &QPushButton::clicked, this, [this, url]() {
+            m_db.savehotkey(url);
+            currenthotkeyurl = url;
         });
 
         connect(deleteBtn, &QPushButton::clicked, this, [this, id]() {
@@ -488,9 +620,11 @@ void MainWindow::refreshBookmarks()
         const QString shown = e.name.isEmpty() ? e.url
                                                : QString("%1 – %2").arg(e.name, e.url);
         auto *linkBtn = new ElidedButton(shown);
+        auto *sethotkeybutton = new QPushButton("Set as hotkey");
         auto *deleteBtn = new QPushButton("X");
 
         rowLayout->addWidget(linkBtn, 1);
+        rowLayout->addWidget(sethotkeybutton);
         rowLayout->addWidget(deleteBtn);
 
         const int id = e.id;
@@ -498,6 +632,11 @@ void MainWindow::refreshBookmarks()
 
         connect(linkBtn, &QPushButton::clicked, this, [this, url]() {
             if (m_openUrl) m_openUrl(QUrl(url));
+        });
+
+        connect(sethotkeybutton, &QPushButton::clicked, this, [this, url]() {
+            m_db.savehotkey(url);
+            currenthotkeyurl = url;
         });
 
         connect(deleteBtn, &QPushButton::clicked, this, [this, url]() {

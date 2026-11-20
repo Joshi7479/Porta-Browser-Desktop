@@ -36,6 +36,8 @@ public:
     bool bookmarkExists(const QString &url);
     bool savedisableclosestate(const bool &disableclosestate);
     bool loaddisableclosestate();
+    bool savehotkey(const QString &hotkey);
+    QString loadhotkey();
 
 private:
     QString m_connectionName;

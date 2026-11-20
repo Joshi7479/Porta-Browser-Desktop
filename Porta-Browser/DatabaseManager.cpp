@@ -65,6 +65,14 @@ bool DatabaseManager::createTables()
         qWarning() << q.lastError().text();
         return false;
     }
+
+    if (!q.exec("CREATE TABLE IF NOT EXISTS hotkey ("
+                "id INTEGER PRIMARY KEY CHECK (id = 1), "
+                "hotkeyurl TEXT NOT NULL)")) {
+        qWarning() << q.lastError().text();
+        return false;
+                }
+
     if (!q.exec("CREATE TABLE IF NOT EXISTS bookmarks ("
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 "name TEXT NOT NULL, "
@@ -135,6 +143,37 @@ QString DatabaseManager::loadsearchengine()
 
     QSqlQuery q(db);
     if (!q.exec("SELECT searchengineurl FROM searchengine WHERE id = 1")) {
+        qWarning() << q.lastError().text();
+        return QString();
+    }
+    return q.next() ? q.value(0).toString() : QString();
+}
+
+bool DatabaseManager::savehotkey(const QString &hotkey)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("INSERT INTO hotkey (id, hotkeyurl) "
+              "VALUES (1, :url) "
+              "ON CONFLICT(id) DO UPDATE SET hotkeyurl = excluded.hotkeyurl");
+    q.bindValue(":url", hotkey);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+QString DatabaseManager::loadhotkey()
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return QString();
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT hotkeyurl FROM hotkey WHERE id = 1")) {
         qWarning() << q.lastError().text();
         return QString();
     }
