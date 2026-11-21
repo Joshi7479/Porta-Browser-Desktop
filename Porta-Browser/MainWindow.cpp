@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QtQuick>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QWebEngineView>
@@ -139,9 +140,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *hotkeyurledit = new QLineEdit(central);
     auto *hotkeybutton = new QToolButton(central);
     auto *closebookmarks = new QToolButton(central);
+    auto *mutesound = new QToolButton(tabwidget);
 
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
+    rightlayout->addWidget(mutesound);
     rightlayout->addWidget(bookmarkbutton);
     rightlayout->addWidget(hotkeybutton);
     rightlayout->addWidget(star);
@@ -156,6 +159,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     leftlayout->setSpacing(2);
 
     bookmarkbutton->setText("📚");
+    mutesound->setText("🔊");
     hotkeybutton->setText("⌘");
     star->setText("⭐");
     menu->setText("≡");
@@ -223,8 +227,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     if (currenthotkeyurl == "empty") {
         hotkeybutton->hide();
     }
+    hotkeyurledit->setText(currenthotkeyurl);
     disableclosestate = m_db.loaddisableclosestate();
     disableclosebutton->setChecked(disableclosestate);
+
+    linedit->installEventFilter(this);
 
     connect(linedit, &QLineEdit::returnPressed, this, [this, tabwidget, linedit]() {
         auto *current = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
@@ -276,11 +283,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         download->accept();
     });
 
-    connect(tabwidget, &QTabWidget::currentChanged, this, [tabwidget, linedit](int i) {
+    connect(tabwidget, &QTabWidget::currentChanged, this, [tabwidget, mutesound, linedit](int i) {
         if (auto *v = qobject_cast<QWebEngineView *>(tabwidget->widget(i)))
             linedit->setText(v->url().toString());
         else
             linedit->clear();
+        auto *currentview = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+        if (currentview && currentview->page()) {
+            bool newMuteState = !currentview->page()->isAudioMuted();
+            mutesound->setText(newMuteState ? "🔊" : "🔇");
+        }
     });
 
     connect(goback, &QToolButton::clicked, this, [tabwidget]() {
@@ -309,7 +321,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     auto addNewTab = std::make_shared<std::function<QWebEngineView *(const QUrl &)>>();
 
-    *addNewTab = [this, tabwidget, star, linedit, rightcorner, leftcorner, layout, addNewTab]
+    *addNewTab = [this, tabwidget, star, linedit, rightcorner, mutesound, leftcorner, layout, addNewTab]
              (const QUrl &url) -> QWebEngineView * {
         auto *view = new QWebEngineView(tabwidget);
 
@@ -320,6 +332,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             view);
         view->setPage(page);
         view->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+
+        connect(page, &QWebEnginePage::audioMutedChanged, this, [this, view, mutesound, tabwidget](bool muted) {
+            if (tabwidget->currentWidget() == view) {
+                mutesound->setText(muted ? "🔇" : "🔊");
+            }
+        });
 
         connect(view->page(), &QWebEnginePage::fullScreenRequested, this,
         [this, tabwidget, linedit, rightcorner, leftcorner, layout](QWebEngineFullScreenRequest request) {
@@ -345,6 +363,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
                 if (m_wasMaximized) showMaximized();
                 else showNormal();
                 }
+
         });
 
         connect(view, &QWebEngineView::titleChanged, this, [tabwidget, view](const QString &title) {
@@ -398,6 +417,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     }
     });
 
+
+
     connect(tabwidget, &QTabWidget::tabCloseRequested, this, [this, addNewTab, tabwidget](int index) {
         QWidget *w = tabwidget->widget(index);
         tabwidget->removeTab(index);
@@ -409,6 +430,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             (*addNewTab)(QUrl(currentsearchengine));
         };
 
+    });
+
+    connect(mutesound, &QPushButton::clicked, this, [this, mutesound, tabwidget]() {
+        auto *currentview = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+        if (currentview && currentview->page()) {
+            bool newmutestate = !currentview->page()->isAudioMuted();
+            currentview->page()->setAudioMuted(newmutestate);
+            mutesound->setText(newmutestate ? "🔇" : "🔊");
+        }
     });
 
     connect(searchengine, &QLineEdit::returnPressed, this, [this, searchengine]() {
@@ -463,19 +493,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(menu, &QToolButton::clicked, this,
-            [this, tabwidget, linedit, closesettings, searchengine, hotkeyurledit, settingsBar, historyScroll]() {
+            [this, tabwidget, linedit, closesettings, searchengine, saveSettings, resetallcookies, disableclosebutton, closebookmarks, hotkeyurledit, settingsBar, historyScroll]() {
 
         tabwidget->hide();
         linedit->hide();
         closesettings->show();
         settingsBar->show();
+        resetallcookies->show();
+        saveSettings->show();
+        closebookmarks->hide();
+        disableclosebutton->show();
         searchengine->show();
         historyScroll->show();
         hotkeyurledit->show();
         refreshHistory();
     });
 
-    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->hide();
         linedit->hide();
         bookmarkContent->show();
@@ -486,9 +520,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         bookmarkscroll->show();
         saveSettings->hide();
         refreshBookmarks();
+        closebookmarks->show();
     });
 
-    connect(closebookmarks, &QToolButton::clicked, this, [this, tabwidget, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+    connect(closebookmarks, &QToolButton::clicked, this, [this, tabwidget, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->show();
         linedit->show();
         bookmarkContent->hide();
@@ -498,6 +533,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         disableclosebutton->show();
         bookmarkscroll->hide();
         saveSettings->show();
+        closebookmarks->hide();
     });
 
     connect(closesettings, &QToolButton::clicked, this,
@@ -574,6 +610,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     (*addNewTab)(QUrl(currentsearchengine));
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (auto *edit = qobject_cast<QLineEdit *>(obj)) {
+            if (!edit->hasSelectedText())
+                QTimer::singleShot(0, edit, &QLineEdit::selectAll);
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::refreshHistory()

@@ -6,6 +6,8 @@
 #include <QVBoxLayout>
 #include <QWebEngineView>
 #include <QWebEngineProfile>
+#include <QMainWindow>
+#include <QEvent>
 
 #include "DatabaseManager.h"
 
@@ -13,6 +15,9 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     void refreshHistory();
