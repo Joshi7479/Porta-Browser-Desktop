@@ -13,6 +13,8 @@
 #include "DatabaseManager.h"
 #include <QDir>
 #include <QStandardPaths>
+#include <QShortcut>
+#include <QKeySequence>
 #include <QWebEngineProfile>
 #include <QWebEnginePage>
 #include <QDebug>
@@ -30,6 +32,7 @@
 #include <QWebEnginePermission>
 #include <QWebEngineFullScreenRequest>
 #include <QTabBar>
+#include <QProgressBar>
 
 
 namespace {
@@ -117,6 +120,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     }
 
     auto *central = new QWidget(this);
+    auto *progress = new QProgressBar(central);
     auto *layout = new QVBoxLayout(central);
     auto *searchengine = new QLineEdit(central);
     auto *closesettings = new QToolButton(central);
@@ -141,7 +145,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *hotkeybutton = new QToolButton(central);
     auto *closebookmarks = new QToolButton(central);
     auto *mutesound = new QToolButton(tabwidget);
+    QShortcut *newtabshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), this);
+    QShortcut *hotkeyshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
 
+    progress->setRange(0, 100);
+    progress->setTextVisible(false);
+    progress->setFixedHeight(3);
+    progress->setStyleSheet(
+        "QProgressBar {boreder: none; background: transparent; }"
+            "QProgressBar::chunk {background: #00F0F0; }");
+    progress->hide();
     rightlayout->setContentsMargins(0, 0, 0, 0);
     rightlayout->setSpacing(2);
     rightlayout->addWidget(mutesound);
@@ -214,6 +227,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout->addWidget(hotkeyurledit);
     layout->addWidget(historyScroll, 1);
     layout->addWidget(bookmarkscroll, 1);
+    layout->addWidget(progress);
     layout->addWidget(linedit);
     layout->addWidget(tabwidget, 1);
     setCentralWidget(central);
@@ -321,7 +335,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     auto addNewTab = std::make_shared<std::function<QWebEngineView *(const QUrl &)>>();
 
-    *addNewTab = [this, tabwidget, star, linedit, rightcorner, mutesound, leftcorner, layout, addNewTab]
+    *addNewTab = [this, tabwidget, star, progress, linedit, rightcorner, mutesound, leftcorner, layout, addNewTab]
              (const QUrl &url) -> QWebEngineView * {
         auto *view = new QWebEngineView(tabwidget);
 
@@ -390,6 +404,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             m_db.addurl(view->title(), pageUrl);
         });
 
+        connect(view, &QWebEngineView::loadStarted, this, [tabwidget, view, progress] () {
+            if (tabwidget->currentWidget() == view) {
+                progress->setValue(0);
+                progress->show();
+            }
+        });
+
+        connect(view, &QWebEngineView::loadProgress, this, [tabwidget, view, progress] (int p) {
+            if (tabwidget->currentWidget() == view) {
+                progress->setValue(p);
+                progress->show();
+            }
+        });
+
+        connect(view, &QWebEngineView::loadFinished, this, [tabwidget, view, progress] (bool) {
+            if (tabwidget->currentWidget() == view) {
+                QTimer::singleShot(150, progress, &QWidget::hide);
+            }
+        });
 
         const int index = tabwidget->addTab(view, "New Tab");
         tabwidget->setCurrentIndex(index);
@@ -397,6 +430,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             view->setUrl(url);
         return view;
     };
+
+    connect(newtabshortcut, &QShortcut::activated, this, [this, addNewTab]() {
+            (*addNewTab)(currentsearchengine);
+        });
+
+    connect(hotkeyshortcut, &QShortcut::activated, this, [this, addNewTab]() {
+        if (currenthotkeyurl != "empty") {
+        if (currenthotkeyurl.contains("http://")) {
+            m_openUrl(QUrl(currenthotkeyurl));
+        }  else if (currenthotkeyurl.contains("https://")) {
+            m_openUrl(QUrl(currenthotkeyurl));
+        } else {
+            currenthotkeyurl = "https://" + currenthotkeyurl;
+            m_openUrl(currenthotkeyurl);
+        }
+
+    }
+        });
 
     m_openUrl = [addNewTab, closesettings](const QUrl &u) {
         (*addNewTab)(u);
