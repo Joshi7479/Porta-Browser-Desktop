@@ -1,4 +1,6 @@
 # Porta-Browser-Desktop
+<img width="1493" height="763" alt="Porta Logo+Schrifft" src="https://github.com/user-attachments/assets/d39f4374-68f2-4d1f-83ad-1aa3543c4873" />
+
 Just. Simple. Browsing. 
 
 Now also for Linux. This code should also be compatible with some modifications wirh Windows & MacOS. But I don´t use these systems. So feel free to compile it for your system!
