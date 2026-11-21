@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     }
 
     if (currentsearchengine.isEmpty()) {
-        currentsearchengine = "https://duckduckgo.com";
+        currentsearchengine = "https://search.brave.com";
     }
 
     if (currenthotkeyurl.isEmpty()) {
@@ -140,6 +140,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *star = new QToolButton(tabwidget);
     auto *bookmarkbutton = new QToolButton(tabwidget);
     auto *disableclosebutton = new QCheckBox("Keep browser open when closing last tab", central);
+    auto *invertlayoutbutton = new QCheckBox("Flip tab bar controls", central);
     auto *resetallcookies = new QToolButton(central);
     auto *hotkeyurledit = new QLineEdit(central);
     auto *hotkeybutton = new QToolButton(central);
@@ -190,8 +191,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     tabwidget->setTabsClosable(true);
     tabwidget->setMovable(true);
-    tabwidget->setCornerWidget(rightcorner, Qt::TopRightCorner);
-    tabwidget->setCornerWidget(leftcorner, Qt::TopLeftCorner);
 
     searchengine->setPlaceholderText("Search-Engine");
     linedit->setPlaceholderText("URL or search");
@@ -203,6 +202,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->setContentsMargins(0, 0, 0, 0);
     settingsBarLayout->setSpacing(2);
     settingsBarLayout->addStretch();
+    settingsBarLayout->addWidget(invertlayoutbutton);
     settingsBarLayout->addWidget(disableclosebutton);
     settingsBarLayout->addWidget(resetallcookies);
     settingsBarLayout->addWidget(saveSettings);
@@ -240,10 +240,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     historyScroll->hide();
     if (currenthotkeyurl == "empty") {
         hotkeybutton->hide();
+    } else {
+        hotkeyurledit->setText(currenthotkeyurl);
     }
-    hotkeyurledit->setText(currenthotkeyurl);
+    invertlayout = m_db.loadinvertlayoutstate();
+    invertlayoutbutton->setChecked(invertlayout);
     disableclosestate = m_db.loaddisableclosestate();
     disableclosebutton->setChecked(disableclosestate);
+    tabwidget->setCornerWidget(nullptr, Qt::TopLeftCorner);
+    tabwidget->setCornerWidget(nullptr, Qt::TopRightCorner);
+
+    if (invertlayout) {
+        tabwidget->setCornerWidget(rightcorner, Qt::TopLeftCorner);
+        tabwidget->setCornerWidget(leftcorner,  Qt::TopRightCorner);
+    } else {
+        tabwidget->setCornerWidget(rightcorner, Qt::TopRightCorner);
+        tabwidget->setCornerWidget(leftcorner,  Qt::TopLeftCorner);
+    }
+    rightcorner->show();
+    leftcorner->show();
+
 
     linedit->installEventFilter(this);
 
@@ -327,6 +343,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(disableclosebutton, &QToolButton::clicked, this, [this, tabwidget](bool checked) {
         m_db.savedisableclosestate(checked);
         disableclosestate = checked;
+    });
+
+    connect(invertlayoutbutton, &QCheckBox::clicked, this, [this](bool checked) {
+        m_db.saveinvertlayoutstate(checked);
+        invertlayout = checked;
     });
 
     connect(resetallcookies, &QToolButton::clicked, this, [this]() {
@@ -437,16 +458,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     connect(hotkeyshortcut, &QShortcut::activated, this, [this, addNewTab]() {
         if (currenthotkeyurl != "empty") {
-        if (currenthotkeyurl.contains("http://")) {
-            m_openUrl(QUrl(currenthotkeyurl));
-        }  else if (currenthotkeyurl.contains("https://")) {
-            m_openUrl(QUrl(currenthotkeyurl));
-        } else {
-            currenthotkeyurl = "https://" + currenthotkeyurl;
-            m_openUrl(currenthotkeyurl);
-        }
-
-    }
+            if (currenthotkeyurl.contains("http://")) {
+                m_openUrl(QUrl(currenthotkeyurl));
+            }  else if (currenthotkeyurl.contains("https://")) {
+                m_openUrl(QUrl(currenthotkeyurl));
+            } else {
+                currenthotkeyurl = "https://" + currenthotkeyurl;
+                m_openUrl(currenthotkeyurl);
+            }
+        } else (m_openUrl(currentsearchengine));
         });
 
     m_openUrl = [addNewTab, closesettings](const QUrl &u) {
@@ -544,7 +564,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(menu, &QToolButton::clicked, this,
-            [this, tabwidget, linedit, closesettings, searchengine, saveSettings, resetallcookies, disableclosebutton, closebookmarks, hotkeyurledit, settingsBar, historyScroll]() {
+            [this, tabwidget, linedit, closesettings, searchengine, saveSettings, invertlayoutbutton, resetallcookies, disableclosebutton, closebookmarks, hotkeyurledit, settingsBar, historyScroll]() {
 
         tabwidget->hide();
         linedit->hide();
@@ -557,10 +577,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         searchengine->show();
         historyScroll->show();
         hotkeyurledit->show();
+        invertlayoutbutton->show();
         refreshHistory();
     });
 
-    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, invertlayoutbutton, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->hide();
         linedit->hide();
         bookmarkContent->show();
@@ -568,6 +589,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         closesettings->hide();
         resetallcookies->hide();
         disableclosebutton->hide();
+        invertlayoutbutton->hide();
         bookmarkscroll->show();
         saveSettings->hide();
         refreshBookmarks();
@@ -588,7 +610,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(closesettings, &QToolButton::clicked, this,
-            [this, searchengine, hotkeybutton, closesettings, tabwidget, linedit, hotkeyurledit, settingsBar, bookmarkscroll, historyScroll]() {
+            [this, searchengine, hotkeybutton, closesettings, rightcorner, leftcorner, tabwidget, linedit, hotkeyurledit, settingsBar, bookmarkscroll, historyScroll]() {
         searchengine->hide();
         closesettings->hide();
         historyScroll->hide();
@@ -602,6 +624,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         } else {
             hotkeybutton->show();
         }
+
+        tabwidget->setCornerWidget(nullptr, Qt::TopLeftCorner);
+        tabwidget->setCornerWidget(nullptr, Qt::TopRightCorner);
+
+        if (invertlayout) {
+            tabwidget->setCornerWidget(rightcorner, Qt::TopLeftCorner);
+            tabwidget->setCornerWidget(leftcorner,  Qt::TopRightCorner);
+        } else {
+            tabwidget->setCornerWidget(rightcorner, Qt::TopRightCorner);
+            tabwidget->setCornerWidget(leftcorner,  Qt::TopLeftCorner);
+            }
+        rightcorner->show();
+        leftcorner->show();
 
         text = searchengine->text().trimmed();
         if (text.isEmpty()) return;

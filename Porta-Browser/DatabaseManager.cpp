@@ -59,6 +59,13 @@ bool DatabaseManager::createTables()
         return false;
                 }
 
+    if (!q.exec("CREATE TABLE IF NOT EXISTS invertlayout ("
+        "id INTEGER PRIMARY KEY CHECK (id = 1), "
+        "invertlayout BOOLEAN NOT NULL DEFAULT 0)")) {
+        qWarning() << q.lastError().text();
+        return false;
+        }
+
     if (!q.exec("CREATE TABLE IF NOT EXISTS searchengine ("
                 "id INTEGER PRIMARY KEY CHECK (id = 1), "
                 "searchengineurl TEXT NOT NULL)")) {
@@ -206,6 +213,39 @@ bool DatabaseManager::loaddisableclosestate()
 
     QSqlQuery q(db);
     if (!q.exec("SELECT disableclose FROM closeifalltabsclosed WHERE id = 1")) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+
+    return q.next() ? q.value(0).toBool() : false;
+}
+
+bool DatabaseManager::saveinvertlayoutstate(const bool &invertlayout)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("INSERT INTO invertlayout (id, invertlayout) "
+          "VALUES (1, :invertlayout) "
+          "ON CONFLICT(id) DO UPDATE SET invertlayout = excluded.invertlayout");
+    q.bindValue(":invertlayout", invertlayout);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+bool DatabaseManager::loadinvertlayoutstate()
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen())
+        return false;
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT invertlayout FROM invertlayout WHERE id = 1")) {
         qWarning() << q.lastError().text();
         return false;
     }

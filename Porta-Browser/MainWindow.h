@@ -30,6 +30,8 @@ private:
     QString currenthotkeyurl = currentsearchengine;
     bool disableclose = false;
     bool disableclosestate = false;
+    bool invertlayout = false;
+    bool invertlayoutstate = false;
     bool m_wasMaximized = false;
 
     QVBoxLayout *m_historyLayout = nullptr;

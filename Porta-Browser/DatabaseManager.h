@@ -38,6 +38,8 @@ public:
     bool loaddisableclosestate();
     bool savehotkey(const QString &hotkey);
     QString loadhotkey();
+    bool saveinvertlayoutstate(const bool &saveinvertlayoutstate);
+    bool loadinvertlayoutstate();
 
 private:
     QString m_connectionName;
