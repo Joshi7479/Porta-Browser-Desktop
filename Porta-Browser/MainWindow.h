@@ -33,6 +33,8 @@ private:
     bool invertlayout = false;
     bool invertlayoutstate = false;
     bool m_wasMaximized = false;
+    bool savehistory = true;
+    bool currentsavehistorystate = true;
 
     QVBoxLayout *m_historyLayout = nullptr;
     QVBoxLayout *m_bookmarkLayout = nullptr;

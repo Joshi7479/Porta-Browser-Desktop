@@ -40,6 +40,9 @@ public:
     QString loadhotkey();
     bool saveinvertlayoutstate(const bool &saveinvertlayoutstate);
     bool loadinvertlayoutstate();
+    bool deleteallhistory();
+    bool savesavehistorystate(const bool &saveinvertlayoutstate);
+    bool loadsavehistorystate();
 
 private:
     QString m_connectionName;

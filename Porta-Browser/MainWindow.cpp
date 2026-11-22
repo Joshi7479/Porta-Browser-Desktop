@@ -146,6 +146,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *hotkeybutton = new QToolButton(central);
     auto *closebookmarks = new QToolButton(central);
     auto *mutesound = new QToolButton(tabwidget);
+    auto *deletehistory = new QToolButton(central);
+    auto *savehistorybutton = new QCheckBox("Enable History" ,central);
     QShortcut *newtabshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), this);
     QShortcut *hotkeyshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
 
@@ -185,6 +187,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     goback->setText("<");
     reload->setText("⟳");
     goforward->setText(">");
+    deletehistory->setText("Delete the history");
     resetallcookies->setText("Delete all cookies");
     hotkeyurledit->setPlaceholderText("Set hotkey URL || Leave blank to disable");
     newtab->setAutoRaise(true);
@@ -202,8 +205,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->setContentsMargins(0, 0, 0, 0);
     settingsBarLayout->setSpacing(2);
     settingsBarLayout->addStretch();
+    settingsBarLayout->addWidget(savehistorybutton);
     settingsBarLayout->addWidget(invertlayoutbutton);
     settingsBarLayout->addWidget(disableclosebutton);
+    settingsBarLayout->addWidget(deletehistory);
     settingsBarLayout->addWidget(resetallcookies);
     settingsBarLayout->addWidget(saveSettings);
     settingsBarLayout->addWidget(closebookmarks);
@@ -243,6 +248,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     } else {
         hotkeyurledit->setText(currenthotkeyurl);
     }
+    currentsavehistorystate = m_db.loadsavehistorystate();
+    savehistorybutton->setChecked(currentsavehistorystate);
     invertlayout = m_db.loadinvertlayoutstate();
     invertlayoutbutton->setChecked(invertlayout);
     disableclosestate = m_db.loaddisableclosestate();
@@ -350,6 +357,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         invertlayout = checked;
     });
 
+    connect(savehistorybutton, &QCheckBox::clicked, this, [this](bool checked) {
+        m_db.savesavehistorystate(checked);
+        currentsavehistorystate = checked;
+    });
+
     connect(resetallcookies, &QToolButton::clicked, this, [this]() {
         m_profile->cookieStore()->deleteAllCookies();
     });
@@ -422,7 +434,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             if (!ok) return;
             const QString pageUrl = view->url().toString();
             if (pageUrl.isEmpty() || pageUrl == "about:blank") return;
-            m_db.addurl(view->title(), pageUrl);
+            if (currentsavehistorystate) {
+                m_db.addurl(view->title(), pageUrl);
+            }
         });
 
         connect(view, &QWebEngineView::loadStarted, this, [tabwidget, view, progress] () {
@@ -564,8 +578,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(menu, &QToolButton::clicked, this,
-            [this, tabwidget, linedit, closesettings, searchengine, saveSettings, invertlayoutbutton, resetallcookies, disableclosebutton, closebookmarks, hotkeyurledit, settingsBar, historyScroll]() {
-
+            [this, tabwidget, linedit, closesettings, deletehistory, searchengine, saveSettings, invertlayoutbutton, resetallcookies, disableclosebutton, closebookmarks, hotkeyurledit, settingsBar, historyScroll]() {
+        deletehistory->show();
         tabwidget->hide();
         linedit->hide();
         closesettings->show();
@@ -581,8 +595,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         refreshHistory();
     });
 
-    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, invertlayoutbutton, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
+    connect(bookmarkbutton, &QToolButton::clicked, this, [this, tabwidget, deletehistory, invertlayoutbutton, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->hide();
+        deletehistory->hide();
         linedit->hide();
         bookmarkContent->show();
         settingsBar->show();
@@ -596,6 +611,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         closebookmarks->show();
     });
 
+    connect(deletehistory, &QToolButton::clicked, this, [this]() {
+        m_db.deleteallhistory();
+        refreshHistory();
+    });
     connect(closebookmarks, &QToolButton::clicked, this, [this, tabwidget, closebookmarks, disableclosebutton, saveSettings, resetallcookies, linedit, closesettings, settingsBar, bookmarkContent, bookmarkscroll]() {
         tabwidget->show();
         linedit->show();

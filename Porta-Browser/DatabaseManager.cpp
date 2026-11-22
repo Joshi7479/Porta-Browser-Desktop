@@ -66,6 +66,13 @@ bool DatabaseManager::createTables()
         return false;
         }
 
+    if (!q.exec("CREATE TABLE IF NOT EXISTS savehistory ("
+        "id INTEGER PRIMARY KEY CHECK (id = 1), "
+        "savehistory BOOLEAN NOT NULL DEFAULT 1)")) {
+        qWarning() << q.lastError().text();
+        return false;
+        }
+
     if (!q.exec("CREATE TABLE IF NOT EXISTS searchengine ("
                 "id INTEGER PRIMARY KEY CHECK (id = 1), "
                 "searchengineurl TEXT NOT NULL)")) {
@@ -253,6 +260,39 @@ bool DatabaseManager::loadinvertlayoutstate()
     return q.next() ? q.value(0).toBool() : false;
 }
 
+bool DatabaseManager::savesavehistorystate(const bool &savehistory)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("INSERT INTO savehistory (id, savehistory) "
+          "VALUES (1, :savehistory) "
+          "ON CONFLICT(id) DO UPDATE SET savehistory = excluded.savehistory");
+    q.bindValue(":savehistory", savehistory);
+
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+bool DatabaseManager::loadsavehistorystate()
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen())
+        return false;
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT savehistory FROM savehistory WHERE id = 1")) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+
+    return q.next() ? q.value(0).toBool() : true;
+}
+
 void DatabaseManager::printHistory()
 {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
@@ -305,6 +345,20 @@ bool DatabaseManager::deletehistory(int id)
     }
     return true;
 }
+
+bool DatabaseManager::deleteallhistory() {
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("DELETE FROM history");
+    if (!q.exec()) {
+        qWarning() << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
 
 QList<bookmarks> DatabaseManager::loadbookmarks()
 {

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(Porta-Browser VERSION 0.0.5.2 LANGUAGES CXX)
+project(Porta-Browser VERSION 0.0.5 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,6 +39,7 @@ install(TARGETS Porta-Browser
 
 install(FILES porta-browser.desktop
         DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+
 install(FILES porta-browser.png
         DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps)
 
