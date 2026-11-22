@@ -147,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *closebookmarks = new QToolButton(central);
     auto *mutesound = new QToolButton(tabwidget);
     auto *deletehistory = new QToolButton(central);
+    auto *visitmeongithub = new QToolButton(central);
     auto *savehistorybutton = new QCheckBox("Enable History" ,central);
     QShortcut *newtabshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), this);
     QShortcut *hotkeyshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
@@ -175,6 +176,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     leftlayout->setContentsMargins(0, 0, 0, 0);
     leftlayout->setSpacing(2);
 
+    visitmeongithub->setText("Visit me on Github");
     bookmarkbutton->setText("📚");
     mutesound->setText("🔊");
     hotkeybutton->setText("⌘");
@@ -212,6 +214,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settingsBarLayout->addWidget(deletehistory);
     settingsBarLayout->addWidget(resetallcookies);
     settingsBarLayout->addWidget(saveSettings);
+    settingsBarLayout->addWidget(visitmeongithub);
     settingsBarLayout->addWidget(closebookmarks);
     settingsBarLayout->addWidget(closesettings);
     auto *historyScroll = new QScrollArea(central);
@@ -690,6 +693,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
         currenthotkeyurl = text2;
     });
+
+    connect(visitmeongithub, &QToolButton::clicked, this,
+        [this, closesettings, addNewTab]() {
+            (*addNewTab)(QUrl("https://github.com/Joshi7479/Porta-Browser-Desktop"));
+            closesettings->click();
+        });
 
     connect(closeall, &QToolButton::clicked, this, [this, tabwidget, addNewTab]() {
         disableclose = true;
