@@ -150,6 +150,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     auto *savehistorybutton = new QCheckBox("Enable History" ,central);
     QShortcut *newtabshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), this);
     QShortcut *hotkeyshortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
+    QShortcut *reloadshortcut = new QShortcut(QKeySequence(Qt::Key_F5), this);
 
     progress->setRange(0, 100);
     progress->setTextVisible(false);
@@ -343,6 +344,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     });
 
     connect(reload, &QToolButton::clicked, this, [tabwidget]() {
+        auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
+        if (v) v->reload();
+    });
+
+    connect(reloadshortcut, &QShortcut::activated, this, [tabwidget]() {
         auto *v = qobject_cast<QWebEngineView *>(tabwidget->currentWidget());
         if (v) v->reload();
     });
